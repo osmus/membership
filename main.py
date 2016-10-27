@@ -71,11 +71,13 @@ def user():
     if access_token:
         user = github.get('user')
 
-        membership = github.get('teams/{}/members/{}'.format(TEAM_ID, user.get('login')))
-        if membership.status_code == 204:
-            member_of_board = True
-        else:
-            member_of_board = False
+        member_of_board = False
+        try:
+            membership = github.get('teams/{}/members/{}'.format(TEAM_ID, user.get('login')))
+            if membership.status_code == 204:
+                member_of_board = True
+        except github.GitHubError:
+            pass
 
         return "Hi {}, you are{} a member of the OSM US board".format(
             user.get('login'),
