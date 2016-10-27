@@ -1,6 +1,6 @@
 from flask import Flask, request, g, session, redirect, url_for
 from flask import render_template_string
-from flask_github import GitHub
+from flask_github import GitHub, GitHubError
 import os
 
 SECRET_KEY = 'development key'
@@ -76,7 +76,7 @@ def user():
             membership = github.get('teams/{}/members/{}'.format(TEAM_ID, user.get('login')))
             if membership.status_code == 204:
                 member_of_board = True
-        except github.GitHubError:
+        except GitHubError:
             pass
 
         return "Hi {}, you are{} a member of the OSM US board".format(
