@@ -1,4 +1,4 @@
-from flask import Flask, request, g, session, redirect, url_for
+from flask import Flask, flash, request, session, redirect, url_for
 from flask import render_template_string
 from flask_github import GitHub, GitHubError
 import os
@@ -24,10 +24,18 @@ github = GitHub(app)
 @app.route('/')
 def index():
     if session.get('github_access_token'):
-        t = 'Hello! <a href="{{ url_for("user") }}">Get user</a> ' \
-            '<a href="{{ url_for("logout") }}">Logout</a>'
+        t = """Hello {{ session.get("github_login") }}!
+            <a href="{{ url_for("logout") }}">Logout</a>"""
     else:
-        t = 'Hello! <a href="{{ url_for("login") }}">Login</a>'
+        t = """Hello! {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <ul class="flashes">
+                {% for message in messages %}
+                  <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %} <a href="{{ url_for("login") }}">Login</a>"""
 
     return render_template_string(t)
 
@@ -35,9 +43,6 @@ def index():
 @github.access_token_getter
 def token_getter():
     return session.get('github_access_token')
-    user = g.user
-    if user is not None:
-        return user.github_access_token
 
 
 @app.route('/github-callback')
@@ -48,7 +53,17 @@ def authorized(access_token):
         return redirect(next_url)
 
     session['github_access_token'] = access_token
-    return redirect(next_url)
+
+    # Check to make sure the user is a member of the required team
+    user = github.get('user')
+    user_login = user.get('login')
+    try:
+        membership = github.get('teams/{}/members/{}'.format(TEAM_ID, user_login))
+        session['github_login'] = user_login
+        return redirect(next_url)
+    except GitHubError:
+        flash('Could not log you in', 'error')
+        return redirect(url_for('logout'))
 
 
 @app.route('/login')
@@ -62,29 +77,8 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('github_access_token', None)
+    session.pop('github_login', None)
     return redirect(url_for('index'))
-
-
-@app.route('/user')
-def user():
-    access_token = session.get('github_access_token')
-    if access_token:
-        user = github.get('user')
-
-        member_of_board = False
-        try:
-            membership = github.get('teams/{}/members/{}'.format(TEAM_ID, user.get('login')))
-            if membership.status_code == 204:
-                member_of_board = True
-        except GitHubError:
-            pass
-
-        return "Hi {}, you are{} a member of the OSM US board".format(
-            user.get('login'),
-            "" if member_of_board else " not",
-        )
-    else:
-        return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
