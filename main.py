@@ -21,25 +21,6 @@ app.config.from_object(__name__)
 github = GitHub(app)
 
 
-@app.route('/')
-def index():
-    if session.get('github_access_token'):
-        t = """Hello {{ session.get("github_login") }}!
-            <a href="{{ url_for("logout") }}">Logout</a>"""
-    else:
-        t = """Hello! {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <ul class="flashes">
-                {% for message in messages %}
-                  <li>{{ message }}</li>
-                {% endfor %}
-                </ul>
-              {% endif %}
-            {% endwith %} <a href="{{ url_for("login") }}">Login</a>"""
-
-    return render_template_string(t)
-
-
 @github.access_token_getter
 def token_getter():
     return session.get('github_access_token')
@@ -64,6 +45,25 @@ def authorized(access_token):
     except GitHubError:
         flash('Could not log you in', 'error')
         return redirect(url_for('logout'))
+
+
+@app.route('/')
+def index():
+    if session.get('github_access_token'):
+        t = """Hello {{ session.get("github_login") }}!
+            <a href="{{ url_for("logout") }}">Logout</a>"""
+    else:
+        t = """Hello! {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <ul class="flashes">
+                {% for message in messages %}
+                  <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %} <a href="{{ url_for("login") }}">Login</a>"""
+
+    return render_template_string(t)
 
 
 @app.route('/login')
