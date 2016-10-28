@@ -1,0 +1,43 @@
+Hello {{ session['github_login'] }}!
+<a href="{{ url_for("logout") }}">Logout</a>
+
+<table>
+<tr>
+    <th>Email</th>
+    <th>Member Status</th>
+</tr>
+{% for customer in customers %}
+{% if customer.subscriptions.data %}
+{% set subscription = customer.subscriptions.data[0] %}
+{% else %}
+{% set subscription = {"status": "none"} %}
+{% endif %}
+<tr>
+    <td><a href="{{ url_for('show_member', customer_id=customer.id) }}">{{ customer.email }}</a></td>
+    <td class="{{ subscription.status }}">
+        {% if subscription.status == "active" %}
+        Member until {{ subscription.current_period_end | relative_timestamp }}
+        {% elif subscription.status == "past_due" %}
+        Past Due since {{ subscription.current_period_end | relative_timestamp }}
+        {% elif subscription.status == "unpaid" %}
+        Unpaid since {{ subscription.current_period_end | relative_timestamp }}
+        {% elif subscription.status == "canceled" %}
+        Canceled since {{ subscription.current_period_end | relative_timestamp }}
+        {% endif %}
+        {% else %}
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+{% if customers.data %}
+<a href="{{ url_for('member_list', before=customers.data[0].id) }}">Prev</a>
+{% else %}
+Prev
+{% endif %}
+
+{% if customers.has_more %}
+<a href="{{ url_for('member_list', after=customers.data[-1].id) }}">Next</a>
+{% else %}
+Next
+{% endif %}
