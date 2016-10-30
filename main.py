@@ -111,6 +111,14 @@ def show_member(customer_id):
     return render_template('show_member.html', customer=customer)
 
 
+@app.route('/webhooks/stripe')
+def stripe_webhook():
+    webhook_data = request.get_json()
+    event = stripe.Event.retrieve(webhook_data['id'])
+    app.logger.info("Received Stripe webhook event: {}".format(event))
+    return "ok"
+
+
 @app.route('/login')
 def login():
     if session.get('github_access_token', None) is None:
