@@ -111,7 +111,7 @@ def show_member(customer_id):
     return render_template('show_member.html', customer=customer)
 
 
-@app.route('/webhooks/stripe')
+@app.route('/webhooks/stripe', methods=["POST"])
 def stripe_webhook():
     webhook_data = request.get_json()
     event = stripe.Event.retrieve(webhook_data['id'])
