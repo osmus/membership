@@ -32,7 +32,7 @@ stripe.api_key = app.config.get('STRIPE_SECRET_KEY')
 
 
 def tell_slack(message):
-    requests.post(SLACK_URL, data=message)
+    return requests.post(SLACK_URL, json={'text': message})
 
 
 @app.before_first_request
@@ -127,7 +127,7 @@ def stripe_webhook():
         customer = stripe.Customer.retrieve(event.data.object.customer)
         email = customer.email
         app.logger.info("Invoice payment failed for customer: {}".format(customer))
-        # tell_slack("{email}'s automatic membership renewal failed.".format(email=email))
+        tell_slack(":rotating_light: {email}'s automatic membership renewal failed. I'm emailing them to remind them about it.".format(email=email))
 
 
     return "ok"
