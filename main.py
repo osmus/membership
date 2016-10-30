@@ -4,6 +4,7 @@ from flask_github import GitHub, GitHubError
 from datetime import datetime
 import os
 import pprint
+import requests
 import stripe
 import logging
 
@@ -15,6 +16,7 @@ GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
 GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
 STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+SLACK_URL = os.environ.get('SLACK_URL')
 
 # "osmus" Organization, "Board" Team
 TEAM_ID = os.environ.get('GITHUB_TEAM_ID')
@@ -27,6 +29,10 @@ app.config.from_object(__name__)
 github = GitHub(app)
 
 stripe.api_key = app.config.get('STRIPE_SECRET_KEY')
+
+
+def tell_slack(message):
+    requests.post(SLACK_URL, data=message)
 
 
 @app.before_first_request
