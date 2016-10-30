@@ -122,6 +122,14 @@ def stripe_webhook():
     webhook_data = request.get_json()
     event = stripe.Event.retrieve(webhook_data['id'])
     app.logger.info("Received Stripe webhook event: {}".format(event))
+
+    if event.type == 'invoice.payment_failed':
+        customer = stripe.Customer.retrieve(event.data.object.customer)
+        email = customer.email
+        app.logger.info("Invoice payment failed for customer: {}".format(customer))
+        # tell_slack("{email}'s automatic membership renewal failed.".format(email=email))
+
+
     return "ok"
 
 
