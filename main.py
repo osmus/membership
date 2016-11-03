@@ -51,7 +51,7 @@ def token_getter():
 @app.route('/github-callback')
 @github.authorized_handler
 def authorized(access_token):
-    next_url = request.args.get('next') or url_for('index')
+    next_url = request.args.get('next') or url_for('member_list')
     if access_token is None:
         return redirect(next_url)
 
@@ -74,30 +74,10 @@ def _relative_timestamp_filter(timestamp):
     return datetime.fromtimestamp(timestamp).isoformat()
 
 
-@app.route('/')
-def index():
-    if session.get('github_access_token'):
-        t = """Hello {{ session.get("github_login") }}!
-            <a href="{{ url_for("logout") }}">Logout</a>
-            <a href="{{ url_for("member_list") }}">Member List</a>"""
-    else:
-        t = """Hello! {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <ul class="flashes">
-                {% for message in messages %}
-                  <li>{{ message }}</li>
-                {% endfor %}
-                </ul>
-              {% endif %}
-            {% endwith %} <a href="{{ url_for("login") }}">Login</a>"""
-
-    return render_template_string(t)
-
-
 @app.route('/members')
 def member_list():
     if session.get('github_access_token') is None:
-        return redirect(url_for('index'))
+        return render_template('login.html')
 
     after = request.args.get('after')
     before = request.args.get('before')
@@ -114,7 +94,7 @@ def member_list():
 @app.route('/members/<string:customer_id>')
 def show_member(customer_id):
     if session.get('github_access_token') is None:
-        return redirect(url_for('index'))
+        return redirect(url_for('member_list'))
 
     customer = stripe.Customer.retrieve(customer_id)
 
@@ -137,19 +117,19 @@ def stripe_webhook():
     return "ok"
 
 
-@app.route('/login')
-def login():
+@app.route('/members/login')
+def github_login():
     if session.get('github_access_token', None) is None:
         return github.authorize()
     else:
         return 'Already logged in'
 
 
-@app.route('/logout')
-def logout():
+@app.route('/members/logout')
+def github_logout():
     session.pop('github_access_token', None)
     session.pop('github_login', None)
-    return redirect(url_for('index'))
+    return redirect(url_for('member_list'))
 
 
 if __name__ == '__main__':
