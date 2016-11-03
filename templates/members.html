@@ -1,3 +1,5 @@
+{% extends "layout.html" %}
+{% block content %}
 <p>
 Hello {{ session['github_login'] }}!
 <a href="{{ url_for('github_logout') }}">Logout</a>
@@ -54,3 +56,4 @@ Prev
 {% else %}
 Next
 {% endif %}
+{% endblock %}
