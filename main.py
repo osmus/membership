@@ -101,7 +101,12 @@ def member_list():
 
     after = request.args.get('after')
     before = request.args.get('before')
-    customers = stripe.Customer.list(limit=25, starting_after=after, ending_before=before)
+    customers = stripe.Customer.list(
+        limit=25,
+        starting_after=after,
+        ending_before=before,
+        include=['total_count']
+    )
 
     return render_template('members.html', customers=customers)
 
@@ -112,7 +117,6 @@ def show_member(customer_id):
         return redirect(url_for('index'))
 
     customer = stripe.Customer.retrieve(customer_id)
-    pprint.pprint(customer)
 
     return render_template('show_member.html', customer=customer)
 

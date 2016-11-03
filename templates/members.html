@@ -1,6 +1,8 @@
 Hello {{ session['github_login'] }}!
 <a href="{{ url_for("logout") }}">Logout</a>
 
+<p>{{ customers.total_count }} members shown.</p>
+
 <table>
 <tr>
     <th>Email</th>
