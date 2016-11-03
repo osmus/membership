@@ -9,6 +9,7 @@ Hello {{ session['github_login'] }}!
 {% endfor %}
 </ul>
 {% endif %}
+{% endwith %}
 </p>
 
 <p>{{ customers.total_count }} members shown.</p>
