@@ -1,4 +1,4 @@
-from flask import Flask, flash, request, session, redirect, url_for
+from flask import Flask, abort, flash, request, session, redirect, url_for
 from flask import render_template_string, render_template
 from flask_github import GitHub, GitHubError
 from flask_wtf import FlaskForm
