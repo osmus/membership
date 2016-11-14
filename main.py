@@ -364,7 +364,6 @@ def stripe_webhook():
         app.logger.info("Invoice payment failed for customer: {}".format(customer))
         tell_slack(":rotating_light: {email}'s automatic membership renewal failed. I'm emailing them to remind them about it.".format(email=email))
 
-
     return "ok"
 
 
