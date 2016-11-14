@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
-<p>
+<div class="pure-u-1">
+<div class="pure-u-1">
 Hello {{ session['github_login'] }}!
 <a href="{{ url_for('github_logout') }}">Logout</a>
 {% with messages = get_flashed_messages() %}
@@ -12,15 +13,21 @@ Hello {{ session['github_login'] }}!
 </ul>
 {% endif %}
 {% endwith %}
-</p>
+</div>
 
-<p>{{ customers.total_count }} members shown.</p>
+<div class="pure-u-1-6">
+    {{ customers.total_count }} members found.
+</div>
 
-<table>
-<tr>
-    <th>Email</th>
-    <th>Member Status</th>
-</tr>
+<div class="pure-u-1">
+<table class="pure-table">
+<thead>
+    <tr>
+        <th>Email</th>
+        <th>Member Status</th>
+    </tr>
+</thead>
+<tbody>
 {% for customer in customers %}
 {% if customer.subscriptions.data %}
 {% set subscription = customer.subscriptions.data[0] %}
@@ -31,18 +38,21 @@ Hello {{ session['github_login'] }}!
     <td><a href="{{ url_for('show_member', customer_id=customer.id) }}">{{ customer.email }}</a></td>
     <td class="{{ subscription.status }}">
         {% if subscription.status == "active" %}
-        Member until {{ subscription.current_period_end | relative_timestamp }}
+        Member until {{ subscription.current_period_end | iso_timestamp }}
         {% elif subscription.status == "past_due" %}
-        Past Due since {{ subscription.current_period_end | relative_timestamp }}
+        Past Due since {{ subscription.current_period_end | iso_timestamp }}
         {% elif subscription.status == "unpaid" %}
-        Unpaid since {{ subscription.current_period_end | relative_timestamp }}
+        Unpaid since {{ subscription.current_period_end | iso_timestamp }}
         {% elif subscription.status == "canceled" %}
-        Canceled since {{ subscription.current_period_end | relative_timestamp }}
+        Canceled since {{ subscription.current_period_end | iso_timestamp }}
+        {% elif subscription.status == "none" %}
+        Not a member
         {% endif %}
         {% else %}
     </td>
 </tr>
 {% endfor %}
+</tbody>
 </table>
 
 {% if customers.data %}

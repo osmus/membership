@@ -12,40 +12,65 @@
 
 {% from "_formhelpers.html" import render_field %}
 
-<h2>Profile Information</h2>
-<form method="post" action="{{ url_for('membership_update', token=token) }}">
-    <dl>
-        {{ form.csrf_token }}
-        {{ render_field(form.first_name) }}
-        {{ render_field(form.last_name) }}
-        {{ render_field(form.email) }}
-        {{ render_field(form.osm_username) }}
-        {{ render_field(form.address1) }}
-        {{ render_field(form.address2) }}
-        {{ render_field(form.city) }}
-        {{ render_field(form.region) }}
-        {{ render_field(form.postal_code) }}
-        {{ render_field(form.country) }}
-        {{ render_field(form.phone) }}
-    </dl>
-    <p><input type="submit" value="Update Your Information">
-</form>
+<div class="pure-u-1-2">
+<div class="pure-u-1">
+    <h2>Profile Information</h2>
 
-<h2>Payment Information</h2>
+    <form method="post" action="{{ url_for('membership_update', token=token) }}" class="pure-form pure-form-aligned">
+            {{ form.csrf_token }}
+            {{ render_field(form.first_name) }}
+            {{ render_field(form.last_name) }}
+            {{ render_field(form.email) }}
+            {{ render_field(form.osm_username) }}
+            {{ render_field(form.address1) }}
+            {{ render_field(form.address2) }}
+            {{ render_field(form.city) }}
+            {{ render_field(form.region) }}
+            {{ render_field(form.postal_code) }}
+            {{ render_field(form.country) }}
+            {{ render_field(form.phone) }}
+        <button type="submit" class="pure-button pure-button-primary">Update Your Information</button>
+    </form>
+</div>
+</div>
 
-<p>We're using a <strong>{{ current_payment.brand }}</strong> ending in <strong>{{ current_payment.last4 }}</strong>. If you'd like to update it, click the button below:</p>
+<div class="pure-u-1-2">
+<div class="pure-u-1-2">
+    <h2>Membership</h2>
+    <p>
+        {% if customer.metadata.member_since %}
+        You first became a member {{ customer.metadata.member_since|int|format_timedelta }} ago on {{ customer.metadata.member_since|int|format_timestamp }}.
+        {% endif %}
+    </p>
+    <p>
+        {% if subscription == None %}
+        You don't appear to be a member or your membership is cancelled. If you'd like to renew your membership, <a href="">click here</a>.
+        {% elif subscription.status == 'active' %}
+        Your membership is <strong>active</strong>. We'll bill you again in <strong>{{ subscription.current_period_end|format_timedelta }}</strong> on {{ subscription.current_period_end|format_timestamp}}.
+        {% else %}
+        {{ membership }}
+        {% endif %}
+    </p>
+</div>
 
-<form method="post" action="{{ url_for('membership_payment_update', token=token) }}">
-    <script
-        src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-        data-key="{{ stripe_key }}"
-        data-name="OpenStreetMap US"
-        data-panel-label="Update Card Details"
-        data-label="Update Card Details"
-        data-email="{{ customer_email }}"
-        data-allow-remember-me=false
-        data-locale="auto">
-    </script>
-</form>
+<div class="pure-u-1-2">
+    <h2>Payment Information</h2>
+
+    <p>We're using a <strong>{{ customer.default_source.brand }}</strong> ending in <strong>{{ customer.default_source.last4 }}</strong>. If you'd like to update it, click the button below:</p>
+
+    <form method="post" action="{{ url_for('membership_payment_update', token=token) }}">
+        <script
+            src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+            data-key="{{ stripe_key }}"
+            data-name="OpenStreetMap US"
+            data-panel-label="Update Card Details"
+            data-label="Update Card Details"
+            data-email="{{ customer.email }}"
+            data-allow-remember-me=false
+            data-locale="auto">
+        </script>
+    </form>
+</div>
+</div>
 
 {% endblock %}

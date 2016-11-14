@@ -7,6 +7,7 @@ from wtforms import StringField, PasswordField, HiddenField, validators
 from itsdangerous import URLSafeTimedSerializer
 
 from datetime import datetime
+import babel
 import os
 import pprint
 import requests
@@ -106,9 +107,21 @@ def authorized(access_token):
         return redirect(url_for('logout'))
 
 
-@app.template_filter('relative_timestamp')
-def _relative_timestamp_filter(timestamp):
+@app.template_filter('iso_timestamp')
+def _iso_timestamp_filter(timestamp):
     return datetime.fromtimestamp(timestamp).isoformat()
+
+
+@app.template_filter('format_timestamp')
+def _format_timestamp_filter(timestamp):
+    dt = datetime.fromtimestamp(timestamp)
+    return babel.dates.format_datetime(dt, 'EEEE, d MMMM y')
+
+
+@app.template_filter('format_timedelta')
+def _babel_timedelta_filter(timestamp):
+    dt = datetime.fromtimestamp(timestamp)
+    return babel.dates.format_timedelta(datetime.utcnow() - dt)
 
 
 @app.route('/membership', methods=['GET', 'POST'])
@@ -147,8 +160,8 @@ def membership_update(token):
     except:
         abort(404)
 
-    customer = stripe.Customer.retrieve(customer_id, expand=['default_source'])
-    app.logger.info("Got a valid customer! %s", customer.id)
+    customer = stripe.Customer.retrieve(customer_id, expand=['default_source', 'subscriptions'])
+    app.logger.info("Got a valid customer from a url key: %s", customer.id)
 
     form = MemberUpdateForm()
     if form.validate_on_submit():
@@ -186,13 +199,17 @@ def membership_update(token):
             form.country.data = customer.shipping.address.country
             form.phone.data = customer.shipping.phone
 
-    pprint.pprint(customer.default_source)
+    subscription = None
+    if customer.subscriptions.data:
+        # I'm going to assume a single subscription for now, which might be a wrong assumption
+        subscription = customer.subscriptions.data[0]
+
     return render_template(
         'membership_update.html',
         form=form,
         token=token,
-        customer_email=customer.email,
-        current_payment=customer.default_source,
+        customer=customer,
+        subscription=subscription,
         stripe_key=app.config['STRIPE_PUBLISHABLE_KEY'],
     )
 
@@ -231,15 +248,61 @@ def member_list():
     return render_template('members.html', customers=customers)
 
 
-@app.route('/members/<string:customer_id>')
+@app.route('/members/<string:customer_id>', methods=["GET", "POST"])
 def show_member(customer_id):
     if session.get('github_access_token') is None:
         return redirect(url_for('member_list'))
 
-    customer = stripe.Customer.retrieve(customer_id)
+    customer = stripe.Customer.retrieve(customer_id, expand=['default_source', 'subscriptions'])
 
-    return render_template('show_member.html', customer=customer)
+    form = MemberUpdateForm()
+    if form.validate_on_submit():
+        customer.metadata['first_name'] = form.first_name.data
+        customer.metadata['last_name'] = form.last_name.data
+        customer.metadata['osm_username'] = form.osm_username.data
+        customer.shipping = {
+            'name': ' '.join([form.first_name.data, form.last_name.data]),
+            'phone': form.phone.data or None,
+            'address': {
+                'line1': form.address1.data or None,
+                'line2': form.address2.data or None,
+                'city': form.city.data or None,
+                'state': form.region.data or None,
+                'postal_code': form.postal_code.data or None,
+                'country': form.country.data or None,
+            }
+        }
+        customer.save()
 
+        flash('Their details have been updated.')
+        return redirect(url_for('show_member', customer_id=customer.id))
+    else:
+
+        form.email.data = customer.email
+        form.osm_username.data = customer.metadata.get('osm_username')
+        form.first_name.data = customer.metadata.get('first_name')
+        form.last_name.data = customer.metadata.get('last_name')
+        if customer.shipping:
+            form.address1.data = customer.shipping.address.line1
+            form.address2.data = customer.shipping.address.line2
+            form.city.data = customer.shipping.address.city
+            form.region.data = customer.shipping.address.state
+            form.postal_code.data = customer.shipping.address.postal_code
+            form.country.data = customer.shipping.address.country
+            form.phone.data = customer.shipping.phone
+
+    subscription = None
+    if customer.subscriptions.data:
+        # I'm going to assume a single subscription for now, which might be a wrong assumption
+        subscription = customer.subscriptions.data[0]
+
+    pprint.pprint(customer)
+    return render_template(
+        'show_member.html',
+        form=form,
+        customer=customer,
+        subscription=subscription,
+    )
 
 @app.route('/webhooks/stripe', methods=["POST"])
 def stripe_webhook():

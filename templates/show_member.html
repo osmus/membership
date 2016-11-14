@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% block content %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul class="flashes">
+{% for message in messages %}
+    <li>{{ message }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+{% from "_formhelpers.html" import render_field %}
+
+<div class="pure-u-1-2">
+<div class="pure-u-1">
+    <h2>Profile Information</h2>
+
+    <form method="post" action="{{ url_for('show_member', customer_id=customer.id) }}" class="pure-form pure-form-aligned">
+            {{ form.csrf_token }}
+            {{ render_field(form.first_name) }}
+            {{ render_field(form.last_name) }}
+            {{ render_field(form.email) }}
+            {{ render_field(form.osm_username) }}
+            {{ render_field(form.address1) }}
+            {{ render_field(form.address2) }}
+            {{ render_field(form.city) }}
+            {{ render_field(form.region) }}
+            {{ render_field(form.postal_code) }}
+            {{ render_field(form.country) }}
+            {{ render_field(form.phone) }}
+        <button type="submit" class="pure-button pure-button-primary">Update Information</button>
+    </form>
+</div>
+</div>
+
+<div class="pure-u-1-2">
+<div class="pure-u-1-2">
+    <h2>Membership</h2>
+    <p>
+        <strong>Member since</strong>:&nbsp;
+        {% if customer.metadata.member_since %}
+        {{ customer.metadata.member_since|int|format_timestamp }}
+        {% else %}
+        Date not recorded
+        {% endif %}
+
+        {% if subscription == None %}
+        <strong>Member status</strong>: Cancelled
+        {% else %}
+        <strong>Member status</strong>:&nbsp;
+        {{ subscription.status|capitalize }}
+        <strong>Next bill date</strong>:&nbsp;
+        {{ subscription.status|capitalize }}
+        {{ subscription.current_period_end|format_timestamp}}
+        {% endif %}
+    </p>
+</div>
+
+<div class="pure-u-1-2">
+    <h2>Payment Information</h2>
+
+    <p>
+        <strong>{{ customer.default_source.brand }}</strong> ending in <strong>{{ customer.default_source.last4 }}</strong>
+    </p>
+
+</div>
+</div>
+
+{% endblock %}
