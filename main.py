@@ -14,7 +14,7 @@ import requests
 import stripe
 import logging
 
-SECRET_KEY = 'development key'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'development key')
 DEBUG = True
 
 # Set these values
@@ -101,8 +101,10 @@ def authorized(access_token):
     try:
         membership = github.get('teams/{}/members/{}'.format(TEAM_ID, user_login))
         session['github_login'] = user_login
+        app.logger.info('GitHub logged in user %s', user_login)
         return redirect(next_url)
     except GitHubError:
+        app.logger.error('GitHub failed to log in user %s', user_login)
         flash('Could not log you in', 'error')
         return redirect(url_for('logout'))
 
@@ -151,6 +153,7 @@ def request_membership_update():
                     confirm_url=confirm_url
                 )
                 send_email(customer.email, subject, html)
+                app.logger.info('Email address %s requested customer details', customer.email)
                 break
 
         flash('Check your email for a link to update your membership details')
@@ -190,6 +193,7 @@ def membership_update(token):
         customer.save()
 
         flash('Your details have been updated, thanks!')
+        app.logger.info("Successfully updated user details for %s", customer.id)
         return redirect(url_for('membership_update', token=token))
     else:
 
@@ -236,6 +240,7 @@ def membership_payment_update(token):
     customer.source = request.form['stripeToken']
     customer.save()
 
+    app.logger.info("Successfully updated payment details for %s", customer.id)
     flash('Your credit card details have been updated.')
 
     return redirect(url_for('membership_update', token=token))
@@ -255,6 +260,7 @@ def membership_renew(token):
         source=request.form['stripeToken'],
     )
 
+    app.logger.info("Successfully renewed %s membership for %s", request.form['plan_id'], customer_id)
     flash('Your membership is renewed!')
 
     return redirect(url_for('membership_update', token=token))
@@ -272,6 +278,7 @@ def membership_cancel(token):
 
     if sub and sub.customer == customer_id:
         sub.delete(at_period_end=True)
+        app.logger.info("Successfully cancelled membership %s for %s", sub.id, customer_id)
         flash('Your membership has been cancelled and will no longer automatically renew.')
     else:
         flash('There was a problem cancelling your membership. Please contact board@openstreetmap.us.')
@@ -344,7 +351,6 @@ def show_member(customer_id):
         # I'm going to assume a single subscription for now, which might be a wrong assumption
         subscription = customer.subscriptions.data[0]
 
-    pprint.pprint(customer)
     return render_template(
         'show_member.html',
         form=form,
