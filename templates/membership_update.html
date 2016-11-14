@@ -34,7 +34,7 @@
         {% endif %}
     </p>
     <p>
-    {% if subscription == None %}
+    {% if subscription == None or subscription.status == 'past_due' %}
         You don't appear to be a member or your membership has lapsed.
 
         <form method="post" action="{{ url_for('membership_renew', token=token) }}" class="pure-form">
