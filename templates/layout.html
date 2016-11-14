@@ -8,6 +8,17 @@
 </head>
 <body>
     <div class="pure-g">
+    <div id="flashes" class="pure-1">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul class="flashes">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+    </div>
     {% block content %}{% endblock %}
     </div>
 </body>
