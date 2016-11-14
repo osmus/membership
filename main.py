@@ -249,10 +249,6 @@ def membership_renew(token):
     except:
         abort(404)
 
-    # customer = stripe.Customer.retrieve(customer_id)
-    # customer.source = request.form['stripeToken']
-    # customer.save()
-    pprint.pprint(request.form)
     stripe.Subscription.create(
         customer=customer_id,
         plan=request.form['plan_id'],
@@ -260,6 +256,25 @@ def membership_renew(token):
     )
 
     flash('Your membership is renewed!')
+
+    return redirect(url_for('membership_update', token=token))
+
+
+@app.route('/membership/<string:token>/cancel')
+def membership_cancel(token):
+    try:
+        ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+        customer_id = ts.loads(token, salt="email-confirm-key", max_age=86400)
+    except:
+        abort(404)
+
+    sub = stripe.Subscription.retrieve(request.args['subscription_id'])
+
+    if sub and sub.customer == customer_id:
+        sub.delete(at_period_end=True)
+        flash('Your membership has been cancelled and will no longer automatically renew.')
+    else:
+        flash('There was a problem cancelling your membership. Please contact board@openstreetmap.us.')
 
     return redirect(url_for('membership_update', token=token))
 
