@@ -60,8 +60,6 @@
     {% elif subscription.status == 'active' %}
         Your membership is <strong>active</strong>.
         We'll bill you again in <strong>{{ subscription.current_period_end|format_timedelta }}</strong> on {{ subscription.current_period_end|format_timestamp}} using your <strong>{{ customer.default_source.brand }}</strong> ending in <strong>{{ customer.default_source.last4 }}</strong>. <a href="{{ url_for('membership_cancel', token=token, subscription_id=subscription.id) }}">Cancel your membership</a> to prevent future charges.
-    {% else %}
-        {{ membership }}
     {% endif %}
     </p>
 </div>
