@@ -124,8 +124,15 @@ def _babel_timedelta_filter(timestamp):
     return babel.dates.format_timedelta(datetime.utcnow() - dt)
 
 
+@app.template_filter('pennies_as_dollars')
+def _format_pennies_to_dollars(pennies):
+    pennies = int(pennies)
+    dollars = pennies / 100
+    return '{:0.2f}'.format(dollars)
+
+
 @app.route('/membership', methods=['GET', 'POST'])
-def request_membership():
+def request_membership_update():
     form = RequestMemberUpdateLinkForm()
     if form.validate_on_submit():
         email = form.email.data
@@ -147,7 +154,7 @@ def request_membership():
                 break
 
         flash('Check your email for a link to update your membership details')
-        return redirect(url_for('request_membership'))
+        return redirect(url_for('request_membership_update'))
 
     return render_template('membership_update_request.html', form=form)
 
@@ -204,12 +211,15 @@ def membership_update(token):
         # I'm going to assume a single subscription for now, which might be a wrong assumption
         subscription = customer.subscriptions.data[0]
 
+    plans = stripe.Plan.list()
+
     return render_template(
         'membership_update.html',
         form=form,
         token=token,
         customer=customer,
         subscription=subscription,
+        plans=plans,
         stripe_key=app.config['STRIPE_PUBLISHABLE_KEY'],
     )
 
@@ -227,6 +237,29 @@ def membership_payment_update(token):
     customer.save()
 
     flash('Your credit card details have been updated.')
+
+    return redirect(url_for('membership_update', token=token))
+
+
+@app.route('/membership/<string:token>/renew', methods=['POST'])
+def membership_renew(token):
+    try:
+        ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+        customer_id = ts.loads(token, salt="email-confirm-key", max_age=86400)
+    except:
+        abort(404)
+
+    # customer = stripe.Customer.retrieve(customer_id)
+    # customer.source = request.form['stripeToken']
+    # customer.save()
+    pprint.pprint(request.form)
+    stripe.Subscription.create(
+        customer=customer_id,
+        plan=request.form['plan_id'],
+        source=request.form['stripeToken'],
+    )
+
+    flash('Your membership is renewed!')
 
     return redirect(url_for('membership_update', token=token))
 

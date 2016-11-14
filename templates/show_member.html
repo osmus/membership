@@ -44,17 +44,23 @@
         {% else %}
         Date not recorded
         {% endif %}
+    </p>
 
-        {% if subscription == None %}
+    {% if subscription == None %}
+    <p>
         <strong>Member status</strong>: Cancelled
-        {% else %}
+    </p>
+    {% else %}
+    <p>
         <strong>Member status</strong>:&nbsp;
         {{ subscription.status|capitalize }}
-        <strong>Next bill date</strong>:&nbsp;
-        {{ subscription.status|capitalize }}
-        {{ subscription.current_period_end|format_timestamp}}
-        {% endif %}
     </p>
+
+    <p>
+        <strong>Next bill date</strong>:&nbsp;
+        {{ subscription.current_period_end|format_timestamp}}
+    </p>
+    {% endif %}
 </div>
 
 <div class="pure-u-1-2">

@@ -43,33 +43,33 @@
         {% endif %}
     </p>
     <p>
-        {% if subscription == None %}
-        You don't appear to be a member or your membership is cancelled. If you'd like to renew your membership, <a href="">click here</a>.
-        {% elif subscription.status == 'active' %}
-        Your membership is <strong>active</strong>. We'll bill you again in <strong>{{ subscription.current_period_end|format_timedelta }}</strong> on {{ subscription.current_period_end|format_timestamp}}.
-        {% else %}
+    {% if subscription == None %}
+        You don't appear to be a member or your membership has lapsed.
+
+        <form method="post" action="{{ url_for('membership_renew', token=token) }}" class="pure-form">
+            <select name="plan_id">
+                {% for plan in plans %}
+                <option value="{{ plan.id }}">{{ plan.name }} (${{ plan.amount|pennies_as_dollars }}/{{ plan.interval }})</option>
+                {% endfor %}
+            </select>
+            <script
+                src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                data-key="{{ stripe_key }}"
+                data-name="OpenStreetMap US"
+                data-panel-label="Renew Your Membership"
+                data-label="Renew Your Membership"
+                data-email="{{ customer.email }}"
+                data-allow-remember-me=false
+                data-locale="auto">
+            </script>
+        </form>
+
+    {% elif subscription.status == 'active' %}
+        Your membership is <strong>active</strong>. We'll bill you again in <strong>{{ subscription.current_period_end|format_timedelta }}</strong> on {{ subscription.current_period_end|format_timestamp}} using your <strong>{{ customer.default_source.brand }}</strong> ending in <strong>{{ customer.default_source.last4 }}</strong>.
+    {% else %}
         {{ membership }}
-        {% endif %}
+    {% endif %}
     </p>
-</div>
-
-<div class="pure-u-1-2">
-    <h2>Payment Information</h2>
-
-    <p>We're using a <strong>{{ customer.default_source.brand }}</strong> ending in <strong>{{ customer.default_source.last4 }}</strong>. If you'd like to update it, click the button below:</p>
-
-    <form method="post" action="{{ url_for('membership_payment_update', token=token) }}">
-        <script
-            src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-            data-key="{{ stripe_key }}"
-            data-name="OpenStreetMap US"
-            data-panel-label="Update Card Details"
-            data-label="Update Card Details"
-            data-email="{{ customer.email }}"
-            data-allow-remember-me=false
-            data-locale="auto">
-        </script>
-    </form>
 </div>
 </div>
 
