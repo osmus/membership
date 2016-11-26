@@ -1,4 +1,4 @@
-from flask import Flask, abort, flash, request, session, redirect, url_for
+from flask import Flask, Markup, abort, flash, request, session, redirect, url_for
 from flask import render_template_string, render_template
 from flask_github import GitHub, GitHubError
 from flask_wtf import FlaskForm
@@ -86,6 +86,14 @@ def build_plan_name(plan):
     )
 
 
+def find_customer_by_email(email):
+    customer_iter = stripe.Customer.auto_paging_iter(limit=50)
+    for customer in customer_iter:
+        if customer.email and customer.email.lower() == email.lower():
+            return customer
+    return None
+
+
 @app.before_first_request
 def setup_logging():
     if not app.debug:
@@ -157,6 +165,16 @@ def membership_new():
     form.plan.choices.insert(0, ('', 'Select a membership plan'))
 
     if form.validate_on_submit():
+        app.logger.info("Checking for existing customer with email %s", form.email.data)
+        customer = find_customer_by_email(form.email.data)
+        if customer:
+            flash(Markup('We already have a record of this email address. '
+                'Please visit <a href="{}">the renewal page</a> to renew.'.format(
+                    url_for('request_membership_update')
+                ))
+            )
+            return redirect(url_for('membership_new'))
+
         address = {
             'line1': form.address1.data or None,
             'line2': form.address2.data or None,
@@ -210,20 +228,18 @@ def request_membership_update():
 
         ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
-        customer_iter = stripe.Customer.auto_paging_iter(limit=50)
-        for customer in customer_iter:
-            if customer.email and customer.email.lower() == email.lower():
-                app.logger.info("Found email %s", email)
-                subject = "Update Your OpenStreetMap US Payment Details"
-                token = ts.dumps(customer.id, salt='email-confirm-key')
-                confirm_url = url_for('membership_update', token=token, _external=True)
-                html = render_template(
-                    'email_activate.html',
-                    confirm_url=confirm_url
-                )
-                send_email(customer.email, subject, html)
-                app.logger.info('Email address %s requested customer details', customer.email)
-                break
+        customer = find_customer_by_email(email)
+        if customer:
+            app.logger.info("Found email %s", email)
+            subject = "Update Your OpenStreetMap US Payment Details"
+            token = ts.dumps(customer.id, salt='email-confirm-key')
+            confirm_url = url_for('membership_update', token=token, _external=True)
+            html = render_template(
+                'email_activate.html',
+                confirm_url=confirm_url
+            )
+            send_email(customer.email, subject, html)
+            app.logger.info('Email address %s requested customer details', customer.email)
 
         flash('Check your email for a link to update your membership details')
         return redirect(url_for('request_membership_update'))
