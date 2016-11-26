@@ -13,6 +13,7 @@ import pprint
 import requests
 import stripe
 import logging
+import time
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'development key')
 DEBUG = True
@@ -178,7 +179,8 @@ def membership_new():
             metadata={
                 'first_name': form.first_name.data,
                 'last_name': form.last_name.data,
-                'osm_username': form.osm_username.data
+                'osm_username': form.osm_username.data,
+                'member_since': int(time.time()),
             },
             shipping=shipping,
             plan=form.plan.data,
