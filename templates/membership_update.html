@@ -3,31 +3,8 @@
 
 {% from "_formhelpers.html" import render_field %}
 
-<div class="pure-u-1-2">
-<div class="pure-u-1">
-    <h2>Profile Information</h2>
-
-    <form method="post" action="{{ url_for('membership_update', token=token) }}" class="pure-form pure-form-aligned">
-            {{ form.csrf_token }}
-            {{ render_field(form.first_name) }}
-            {{ render_field(form.last_name) }}
-            {{ render_field(form.email) }}
-            {{ render_field(form.osm_username) }}
-            {{ render_field(form.address1) }}
-            {{ render_field(form.address2) }}
-            {{ render_field(form.city) }}
-            {{ render_field(form.region) }}
-            {{ render_field(form.postal_code) }}
-            {{ render_field(form.country) }}
-            {{ render_field(form.phone) }}
-        <button type="submit" class="pure-button pure-button-primary">Update Your Information</button>
-    </form>
-</div>
-</div>
-
-<div class="pure-u-1-2">
-<div class="pure-u-1-2">
-    <h2>Membership</h2>
+<div class="col12">
+    <h1>Membership</h1>
     <p>
         {% if customer.metadata.member_since %}
         You first became a member {{ customer.metadata.member_since|int|format_timedelta }} ago on {{ customer.metadata.member_since|int|format_timestamp }}.
@@ -62,7 +39,25 @@
         We'll bill you again in <strong>{{ subscription.current_period_end|format_timedelta }}</strong> on {{ subscription.current_period_end|format_timestamp}} using your <strong>{{ customer.default_source.brand }}</strong> ending in <strong>{{ customer.default_source.last4 }}</strong>. <a href="{{ url_for('membership_cancel', token=token, subscription_id=subscription.id) }}">Cancel your membership</a> to prevent future charges.
     {% endif %}
     </p>
+
+    <h1>Profile Information</h1>
+
+    <form method="post" action="{{ url_for('membership_update', token=token) }}" class="pure-form pure-form-aligned">
+        {{ form.csrf_token }}
+        {{ render_field(form.first_name) }}
+        {{ render_field(form.last_name) }}
+        {{ render_field(form.email) }}
+        {{ render_field(form.osm_username) }}
+        {{ render_field(form.address1) }}
+        {{ render_field(form.address2) }}
+        {{ render_field(form.city) }}
+        {{ render_field(form.region) }}
+        {{ render_field(form.postal_code) }}
+        {{ render_field(form.country) }}
+        {{ render_field(form.phone) }}
+        <input type="submit" class="pure-button pure-button-primary" value="Update Your Information"></input>
+    </form>
 </div>
-</div>
+
 
 {% endblock %}

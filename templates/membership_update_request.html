@@ -3,13 +3,17 @@
 
 {% from "_formhelpers.html" import render_field %}
 
-<div class="pure-u-1">
+<div class="col12">
+    <h1>Request Membership Details</h1>
+    <p>
+        Enter your email address here and we'll send you a link where you can view your membership details and renew if you'd like.
+    </p>
     <form method="post" action="{{ url_for('request_membership_update') }}">
         <dl>
             {{ form.csrf_token }}
             {{ render_field(form.email) }}
         </dl>
-        <button type="submit" class="pure-button pure-button-primary">Request Details</button>
+        <input type="submit" class="pure-button pure-button-primary" value="Request Details"></input>
     </form>
 </div>
 
