@@ -41,7 +41,10 @@ stripe.api_key = app.config.get('STRIPE_SECRET_KEY')
 
 
 def tell_slack(message):
-    return requests.post(SLACK_URL, json={'text': message})
+    if app.debug:
+        message = '[TEST] ' + message
+
+    return requests.post(app.config.get('SLACK_URL'), json={'text': message})
 
 
 def send_email(recipient, subject, html):
@@ -210,6 +213,9 @@ def membership_new():
 
         flash('Thanks for joining OpenStreetMap US!')
         app.logger.info("Successfully created user %s", customer.id)
+        tell_slack("New member signup from {}".format(
+            ' '.join([form.first_name.data, form.last_name.data]),
+        ))
         return redirect(url_for('membership_update', token=token))
 
     return render_template(
@@ -327,6 +333,9 @@ def membership_payment_update(token):
 
     app.logger.info("Successfully updated payment details for %s", customer.id)
     flash('Your credit card details have been updated.')
+    tell_slack("{} updated their payment details".format(
+        customer.email,
+    ))
 
     return redirect(url_for('membership_update', token=token))
 
@@ -339,14 +348,18 @@ def membership_renew(token):
     except:
         abort(404)
 
-    stripe.Subscription.create(
+    sub = stripe.Subscription.create(
         customer=customer_id,
         plan=request.form['plan_id'],
         source=request.form['stripeToken'],
+        expand=['customer'],
     )
 
     app.logger.info("Successfully renewed %s membership for %s", request.form['plan_id'], customer_id)
     flash('Your membership is renewed!')
+    tell_slack("{} renewed their membership".format(
+        sub.customer.email,
+    ))
 
     return redirect(url_for('membership_update', token=token))
 
@@ -365,8 +378,9 @@ def membership_cancel(token):
         sub.delete(at_period_end=True)
         app.logger.info("Successfully cancelled membership %s for %s", sub.id, customer_id)
         flash('Your membership has been cancelled and will no longer automatically renew.')
-    else:
-        flash('There was a problem cancelling your membership. Please contact board@openstreetmap.us.')
+        tell_slack("{} cancelled their membership".format(
+            sub.customer,
+        ))
 
     return redirect(url_for('membership_update', token=token))
 
