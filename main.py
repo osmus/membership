@@ -372,9 +372,19 @@ def membership_cancel(token):
     except:
         abort(404)
 
-    sub = stripe.Subscription.retrieve(request.args['subscription_id'])
+    sub = stripe.Subscription.retrieve(request.args['subscription_id'], expand=['customer'])
 
-    if sub and sub.customer == customer_id:
+    if not sub:
+        app.logger.error("Subscription not found for id %s", request.args['subscription_id'])
+        flash('There was a problem cancelling your membership. Please contact board@openstreetmap.us.')
+    elif sub.customer.id != customer_id:
+        app.logger.error("Subscription %s found, but user %s didn't match expected %s",
+            request.args['subscription_id'],
+            sub.customer.id,
+            customer_id
+        )
+        flash('There was a problem cancelling your membership. Please contact board@openstreetmap.us.')
+    else:
         sub.delete(at_period_end=True)
         app.logger.info("Successfully cancelled membership %s for %s", sub.id, customer_id)
         flash('Your membership has been cancelled and will no longer automatically renew.')
