@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+
+{% from "_formhelpers.html" import render_field %}
+
+<div class="pure-u-1-2">
+<div class="pure-u-1">
+    <h2>Join OpenStreetMap US</h2>
+
+    <form method="post" action="{{ url_for('membership_new') }}" class="pure-form pure-form-aligned">
+        {{ form.csrf_token }}
+        {{ render_field(form.first_name) }}
+        {{ render_field(form.last_name) }}
+        {{ render_field(form.email) }}
+        {{ render_field(form.osm_username) }}
+        {{ render_field(form.address1) }}
+        {{ render_field(form.address2) }}
+        {{ render_field(form.city) }}
+        {{ render_field(form.region) }}
+        {{ render_field(form.postal_code) }}
+        {{ render_field(form.country) }}
+        {{ render_field(form.phone) }}
+
+        {{ render_field(form.plan) }}
+
+        <script
+            src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+            data-key="{{ stripe_key }}"
+            data-name="OpenStreetMap US"
+            data-panel-label="Become a Member"
+            data-label="Enter Payment Information"
+            data-allow-remember-me=false
+            data-locale="auto">
+        </script>
+    </form>
+</div>
+</div>
+
+{% endblock %}

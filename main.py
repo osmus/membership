@@ -3,7 +3,7 @@ from flask import render_template_string, render_template
 from flask_github import GitHub, GitHubError
 from flask_wtf import FlaskForm
 
-from wtforms import StringField, PasswordField, HiddenField, validators
+from wtforms import StringField, PasswordField, HiddenField, SelectField, validators
 from itsdangerous import URLSafeTimedSerializer
 
 from datetime import datetime
@@ -73,6 +73,18 @@ class MemberUpdateForm(FlaskForm):
     phone = StringField('Phone Number')
 
 
+class NewMemberForm(MemberUpdateForm):
+    plan = SelectField('Membership Plan', [validators.DataRequired("Select a membership plan")])
+
+
+def build_plan_name(plan):
+    return '{name} (${amount:0.2f}/{interval})'.format(
+        name=plan.name,
+        amount=plan.amount / 100.0,
+        interval=plan.interval,
+    )
+
+
 @app.before_first_request
 def setup_logging():
     if not app.debug:
@@ -131,6 +143,61 @@ def _format_pennies_to_dollars(pennies):
     pennies = int(pennies)
     dollars = pennies / 100
     return '{:0.2f}'.format(dollars)
+
+
+@app.route('/membership/join', methods=['GET', 'POST'])
+def membership_new():
+    form = NewMemberForm()
+
+    plans = stripe.Plan.list()
+    form.plan.choices = [
+        (p.id, build_plan_name(p)) for p in plans
+    ]
+    form.plan.choices.insert(0, ('', 'Select a membership plan'))
+
+    if form.validate_on_submit():
+        address = {
+            'line1': form.address1.data or None,
+            'line2': form.address2.data or None,
+            'city': form.city.data or None,
+            'state': form.region.data or None,
+            'postal_code': form.postal_code.data or None,
+            'country': form.country.data or None,
+        }
+
+        shipping = None
+        if any(address.values()):
+            shipping = {
+                'name': ' '.join([form.first_name.data, form.last_name.data]),
+                'phone': form.phone.data or None,
+                'address': address,
+            }
+
+        customer = stripe.Customer.create(
+            email=form.email.data,
+            metadata={
+                'first_name': form.first_name.data,
+                'last_name': form.last_name.data,
+                'osm_username': form.osm_username.data
+            },
+            shipping=shipping,
+            plan=form.plan.data,
+            source=request.form['stripeToken'],
+        )
+
+        ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+        token = ts.dumps(customer.id, salt='email-confirm-key')
+
+        flash('Thanks for joining OpenStreetMap US!')
+        app.logger.info("Successfully created user %s", customer.id)
+        return redirect(url_for('membership_update', token=token))
+
+    return render_template(
+        'join_customer.html',
+        form=form,
+        plans=plans,
+        stripe_key=app.config['STRIPE_PUBLISHABLE_KEY'],
+    )
 
 
 @app.route('/membership', methods=['GET', 'POST'])
