@@ -51,7 +51,7 @@ def send_email(recipient, subject, html):
     app.logger.info("Sending an email to %s", recipient)
     request_url = 'https://api.mailgun.net/v2/{0}/messages'.format(app.config['MAILGUN_SANDBOX'])
     response = requests.post(request_url, auth=('api', app.config['MAILGUN_API_KEY']), data={
-        'from': 'ian@openstreetmap.us',
+        'from': 'OpenStreetMap US Membership <membership@openstreetmap.us>',
         'to': recipient,
         'subject': subject,
         'html': html
@@ -244,7 +244,7 @@ def request_membership_update():
             token = ts.dumps(customer.id, salt='email-confirm-key')
             confirm_url = url_for('membership_update', token=token, _external=True)
             html = render_template(
-                'email_activate.html',
+                'email/activate.html',
                 confirm_url=confirm_url
             )
             send_email(customer.email, subject, html)
@@ -469,6 +469,39 @@ def show_member(customer_id):
         customer=customer,
         subscription=subscription,
     )
+
+
+@app.route('/members/<string:customer_id>/send_renewal_reminder', methods=["GET", "POST"])
+def send_reminder_email(customer_id):
+    if session.get('github_access_token') is None:
+        return redirect(url_for('member_list'))
+
+    customer = stripe.Customer.retrieve(customer_id, expand=['subscriptions'])
+
+    if not customer:
+        flash("Could not find customer")
+        return redirect(url_for('show_member', customer_id=customer_id))
+
+    subscription = None
+    if customer.subscriptions.data and customer.subscriptions.data[0]:
+        subscription = customer.subscriptions.data[0]
+
+        if subscription.status == 'active':
+            flash("This person seems to already be a member, so not sending")
+            return redirect(url_for('show_member', customer_id=customer_id))
+
+    subject = "Your OpenStreetMap US Membership"
+    token = ts.dumps(customer.id, salt='email-confirm-key')
+    confirm_url = url_for('membership_update', token=token, _external=True)
+    html = render_template(
+        'email/activate.html',
+        confirm_url=confirm_url
+    )
+    send_email(customer.email, subject, html)
+    app.logger.info('Sending renewal reminder to %s', customer.email)
+    flash("Reminder email sent")
+    return redirect(url_for('show_member', customer_id=customer_id))
+
 
 @app.route('/webhooks/stripe', methods=["POST"])
 def stripe_webhook():

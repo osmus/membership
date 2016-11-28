@@ -1,0 +1,29 @@
+<html>
+<body>
+<p>
+{% if customer.metadata.first_name %}
+Hi {{ customer.metadata.first_name }},
+{% else %}
+Hi there,
+{% endif %}
+</p>
+
+<p>
+At one point you were a member of OpenStreetMap US, but your membership has since lapsed. We'd like to remind you that you can renew your membership through our handy new membership app:
+</p>
+
+<p>
+<a href="{{ confirm_url }}">Click this link to update your payment details and rewnew.</a>
+</p>
+
+<p>
+If you have any questions or concerns, please reply to this email and we'll be sure to help.
+</p>
+
+<p>
+Thanks!<br/>
+Ian and the OpenStreetMap US Board
+</p>
+
+</body>
+</html>
