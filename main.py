@@ -149,7 +149,7 @@ def _format_timestamp_filter(dt):
 
 
 @app.template_filter('as_delta')
-def _babel_timedelta_filter(timestamp):
+def _babel_timedelta_filter(dt):
     return babel.dates.format_timedelta(datetime.utcnow() - dt)
 
 
