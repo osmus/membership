@@ -7,7 +7,7 @@
     <h1>Membership</h1>
     <p>
         {% if customer.metadata.member_since %}
-        You first became a member {{ customer.metadata.member_since|int|format_timedelta }} ago on {{ customer.metadata.member_since|int|format_timestamp }}.
+        You first became a member {{ customer.metadata.member_since|from_datestamp|as_delta }} ago on {{ customer.metadata.member_since|from_datestamp|as_date }}.
         {% endif %}
     </p>
     <p>

@@ -133,20 +133,23 @@ def authorized(access_token):
         return redirect(url_for('logout'))
 
 
-@app.template_filter('iso_timestamp')
-def _iso_timestamp_filter(timestamp):
-    return datetime.fromtimestamp(timestamp).isoformat()
+@app.template_filter('from_timestamp')
+def _timestamp_to_datetime_filter(timestamp):
+    return datetime.fromtimestamp(timestamp)
 
 
-@app.template_filter('format_timestamp')
-def _format_timestamp_filter(timestamp):
-    dt = datetime.fromtimestamp(timestamp)
+@app.template_filter('from_datestamp')
+def _datestamp_to_datetime_filter(date_str):
+    return datetime.strptime(date_str, '%Y-%m-%d')
+
+
+@app.template_filter('as_date')
+def _format_timestamp_filter(dt):
     return babel.dates.format_datetime(dt, 'EEEE, d MMMM y')
 
 
-@app.template_filter('format_timedelta')
+@app.template_filter('as_delta')
 def _babel_timedelta_filter(timestamp):
-    dt = datetime.fromtimestamp(timestamp)
     return babel.dates.format_timedelta(datetime.utcnow() - dt)
 
 
@@ -201,7 +204,7 @@ def membership_new():
                 'first_name': form.first_name.data,
                 'last_name': form.last_name.data,
                 'osm_username': form.osm_username.data,
-                'member_since': int(time.time()),
+                'member_since': datetime.utcnow().strftime("%Y-%m-%d"),
             },
             shipping=shipping,
             plan=form.plan.data,

@@ -31,7 +31,7 @@
     <p>
         <strong>Member since</strong>:&nbsp;
         {% if customer.metadata.member_since %}
-        {{ customer.metadata.member_since|int|format_timestamp }}
+        {{ customer.metadata.member_since|from_datestamp|as_date }}
         {% else %}
         Date not recorded
         {% endif %}

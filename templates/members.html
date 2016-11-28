@@ -29,13 +29,13 @@ Hello {{ session['github_login'] }}!
     <td><a href="{{ url_for('show_member', customer_id=customer.id) }}">{{ customer.email }}</a></td>
     <td class="{{ subscription.status }}">
         {% if subscription.status == "active" %}
-        Member until {{ subscription.current_period_end | iso_timestamp }}
+        Member until {{ subscription.current_period_end | from_timestamp | as_date }}
         {% elif subscription.status == "past_due" %}
-        Past Due since {{ subscription.current_period_end | iso_timestamp }}
+        Past Due since {{ subscription.current_period_end | from_timestamp | as_date }}
         {% elif subscription.status == "unpaid" %}
-        Unpaid since {{ subscription.current_period_end | iso_timestamp }}
+        Unpaid since {{ subscription.current_period_end | from_timestamp | as_date }}
         {% elif subscription.status == "canceled" %}
-        Canceled since {{ subscription.current_period_end | iso_timestamp }}
+        Canceled since {{ subscription.current_period_end | from_timestamp | as_date }}
         {% elif subscription.status == "none" %}
         Not a member
         {% endif %}
