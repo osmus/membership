@@ -351,6 +351,10 @@ def membership_renew(token):
     except:
         abort(404)
 
+    if not request.form.get('plan_id'):
+        flash("Please select a plan to renew with")
+        return redirect(url_for('membership_update', token=token))
+
     sub = stripe.Subscription.create(
         customer=customer_id,
         plan=request.form['plan_id'],
