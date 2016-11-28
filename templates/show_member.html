@@ -49,7 +49,7 @@
 
     <p>
         <strong>Next bill date</strong>:&nbsp;
-        {{ subscription.current_period_end|format_timestamp}}
+        {{ subscription.current_period_end|from_timestamp|as_date}}
     </p>
     {% endif %}
 </div>

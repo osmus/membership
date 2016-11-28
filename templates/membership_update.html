@@ -33,10 +33,10 @@
         </form>
 
     {% elif subscription.cancel_at_period_end %}
-        Your membership is <strong>active</strong>, but is set to expire in <strong>{{ subscription.current_period_end|format_timedelta }}</strong> on {{ subscription.current_period_end|format_timestamp}}.
+        Your membership is <strong>active</strong>, but is set to expire in <strong>{{ subscription.current_period_end|from_timestamp|as_delta }}</strong> on {{ subscription.current_period_end|from_timestamp|as_date}}.
     {% elif subscription.status == 'active' %}
         Your membership is <strong>active</strong>.
-        We'll bill you again in <strong>{{ subscription.current_period_end|format_timedelta }}</strong> on {{ subscription.current_period_end|format_timestamp}} using your <strong>{{ customer.default_source.brand }}</strong> ending in <strong>{{ customer.default_source.last4 }}</strong>. <a href="{{ url_for('membership_cancel', token=token, subscription_id=subscription.id) }}">Cancel your membership</a> to prevent future charges.
+        We'll bill you again in <strong>{{ subscription.current_period_end|from_timestamp|as_delta }}</strong> on {{ subscription.current_period_end|from_timestamp|as_date}} using your <strong>{{ customer.default_source.brand }}</strong> ending in <strong>{{ customer.default_source.last4 }}</strong>. <a href="{{ url_for('membership_cancel', token=token, subscription_id=subscription.id) }}">Cancel your membership</a> to prevent future charges.
     {% endif %}
     </p>
 
