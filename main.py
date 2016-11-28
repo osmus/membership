@@ -487,14 +487,16 @@ def send_reminder_email(customer_id):
         subscription = customer.subscriptions.data[0]
 
         if subscription.status == 'active':
-            flash("This person seems to already be a member, so not sending")
+            flash("This person seems to already be an active member, so not sending")
             return redirect(url_for('show_member', customer_id=customer_id))
 
     subject = "Your OpenStreetMap US Membership"
+    ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
     token = ts.dumps(customer.id, salt='email-confirm-key')
     confirm_url = url_for('membership_update', token=token, _external=True)
     html = render_template(
-        'email/activate.html',
+        'email/subscription_reminder.html',
+        customer=customer,
         confirm_url=confirm_url
     )
     send_email(customer.email, subject, html)
