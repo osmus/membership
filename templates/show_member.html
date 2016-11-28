@@ -3,31 +3,8 @@
 
 {% from "_formhelpers.html" import render_field %}
 
-<div class="pure-u-1-2">
-<div class="pure-u-1">
-    <h2>Profile Information</h2>
-
-    <form method="post" action="{{ url_for('show_member', customer_id=customer.id) }}" class="pure-form pure-form-aligned">
-            {{ form.csrf_token }}
-            {{ render_field(form.first_name) }}
-            {{ render_field(form.last_name) }}
-            {{ render_field(form.email) }}
-            {{ render_field(form.osm_username) }}
-            {{ render_field(form.address1) }}
-            {{ render_field(form.address2) }}
-            {{ render_field(form.city) }}
-            {{ render_field(form.region) }}
-            {{ render_field(form.postal_code) }}
-            {{ render_field(form.country) }}
-            {{ render_field(form.phone) }}
-        <input type="submit" class="pure-button pure-button-primary" value="Update Information"></input>
-    </form>
-</div>
-</div>
-
-<div class="pure-u-1-2">
-<div class="pure-u-1-2">
-    <h2>Membership</h2>
+<div class="col12">
+    <h1>Membership</h1>
     <p>
         <strong>Member since</strong>:&nbsp;
         {% if customer.metadata.member_since %}
@@ -52,16 +29,31 @@
         {{ subscription.current_period_end|from_timestamp|as_date}}
     </p>
     {% endif %}
-</div>
 
-<div class="pure-u-1-2">
-    <h2>Payment Information</h2>
+    <h1>Payment Information</h1>
 
     <p>
         <strong>{{ customer.default_source.brand }}</strong> ending in <strong>{{ customer.default_source.last4 }}</strong>
     </p>
 
-</div>
+    <h1>Profile Information</h1>
+
+    <form method="post" action="{{ url_for('show_member', customer_id=customer.id) }}" class="pure-form pure-form-aligned">
+        {{ form.csrf_token }}
+        {{ render_field(form.first_name) }}
+        {{ render_field(form.last_name) }}
+        {{ render_field(form.email) }}
+        {{ render_field(form.osm_username) }}
+        {{ render_field(form.address1) }}
+        {{ render_field(form.address2) }}
+        {{ render_field(form.city) }}
+        {{ render_field(form.region) }}
+        {{ render_field(form.postal_code) }}
+        {{ render_field(form.country) }}
+        {{ render_field(form.phone) }}
+        <input type="submit" class="pure-button pure-button-primary" value="Update Information"></input>
+    </form>
+
 </div>
 
 {% endblock %}
