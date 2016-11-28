@@ -16,7 +16,8 @@
 
     {% if subscription == None %}
     <p>
-        <strong>Member status</strong>: Cancelled
+        <strong>Member status</strong>:&nbsp;
+        Cancelled (<a href="{{ url_for('send_reminder_email', customer_id=customer.id) }}">Send Reminder</a>)
     </p>
     {% else %}
     <p>
