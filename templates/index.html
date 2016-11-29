@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="col12">
+    <h1>OpenStreetMap US Membership Status Check</h1>
+
+    <p>
+        From here, you can <a href="{{ url_for('request_membership_update') }}"><strong>request your membership status</strong></a> via email or <a href="{{ url_for('membership_new') }}"><strong>join as a new member</strong></a>.
+    </p>
+</div>
+{% endblock %}
