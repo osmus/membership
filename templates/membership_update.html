@@ -16,7 +16,7 @@
 
         <form method="post" action="{{ url_for('membership_renew', token=token) }}" class="pure-form">
             <select name="plan_id">
-                <option>Select a membership plan</option>
+                <option value="">Select a membership plan</option>
                 {% for plan in plans %}
                 <option value="{{ plan.id }}">{{ plan.name }} (${{ plan.amount|pennies_as_dollars }}/{{ plan.interval }})</option>
                 {% endfor %}
