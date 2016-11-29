@@ -16,7 +16,7 @@ import logging
 import time
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'development key')
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'true').lower() == 'true'
 
 # Set these values
 GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
