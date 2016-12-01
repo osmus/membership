@@ -130,7 +130,7 @@ def authorized(access_token):
     except GitHubError:
         app.logger.error('GitHub failed to log in user %s', user_login)
         flash('Could not log you in', 'error')
-        return redirect(url_for('logout'))
+        return redirect(url_for('github_logout'))
 
 
 @app.template_filter('from_timestamp')
