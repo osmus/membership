@@ -1,0 +1,25 @@
+<html>
+<body>
+<p>
+{% if customer.metadata.first_name %}
+Hi {{ customer.metadata.first_name }},
+{% else %}
+Hi there,
+{% endif %}
+</p>
+
+<p>
+Your OpenStreetMap US membership will be renewing soon. The ${{ event.data.object.amount_due | pennies_as_dollars }} charge will show up on your credit card some time today.
+</p>
+
+<p>
+If you have any questions or concerns, please reply to this email and we'll be sure to help.
+</p>
+
+<p>
+Thanks!<br/>
+The OpenStreetMap US Board
+</p>
+
+</body>
+</html>

@@ -550,6 +550,26 @@ def stripe_webhook():
         send_email(customer.email, subject, html)
         app.logger.info('Sending welcome email to %s', customer.email)
 
+    elif event.type == 'invoice.created' and not event.data.object.closed:
+        # According to Stripe docs an automatic renewal invoice will be created
+        # and then be marked closed=false for an hour or two before charging
+        # the customer.
+        # https://stripe.com/docs/subscriptions/invoices#subscription-renewal-invoices
+        customer = stripe.Customer.retrieve(event.data.object.customer)
+        app.logger.info("New open invoice %s for customer %s", event.data.object.id, customer.id)
+        tell_slack(":timer_clock: {email}'s subscription renewal is coming up, sending a reminder.".format(
+            email=customer.email,
+        ))
+
+        subject = "Your OpenStreetMap US Membership"
+        html = render_template(
+            'email/subscription_upcoming.html',
+            customer=customer,
+            event=event,
+        )
+        send_email(customer.email, subject, html)
+        app.logger.info('Sending renewal reminder email to %s', customer.email)
+
     return "ok"
 
 
