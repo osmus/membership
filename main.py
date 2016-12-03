@@ -514,9 +514,10 @@ def stripe_webhook():
 
     if event.type == 'invoice.payment_failed':
         customer = stripe.Customer.retrieve(event.data.object.customer)
-        email = customer.email
         app.logger.info("Invoice payment failed for customer: {}".format(customer.id))
-        tell_slack(":rotating_light: {email}'s automatic membership renewal failed. I'm emailing them to remind them about it.".format(email=email))
+        tell_slack(":rotating_light: {email}'s automatic membership renewal failed.".format(
+            email=customer.email,
+        ))
 
         subject = "Your OpenStreetMap US Membership"
         ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
@@ -532,10 +533,9 @@ def stripe_webhook():
 
     elif event.type == 'customer.subscription.created':
         customer = stripe.Customer.retrieve(event.data.object.customer)
-        email = customer.email
         app.logger.info("New subscription %s for customer %s", event.data.plan.id, customer.id)
         tell_slack(":tada: {email} joined with a {plan_id} membership (${dollars}/{interval})".format(
-            email=email,
+            email=customer.email,
             plan_id=event.data.plan.id,
             dollars=_format_pennies_to_dollars(event.data.plan.amount),
             interval=event.data.plan.interval,
