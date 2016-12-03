@@ -513,13 +513,25 @@ def send_reminder_email(customer_id):
 def stripe_webhook():
     webhook_data = request.get_json()
     event = stripe.Event.retrieve(webhook_data['id'])
-    app.logger.info("Received Stripe webhook event: {}".format(event))
+    app.logger.info("Received Stripe webhook event: {}".format(event.id))
 
     if event.type == 'invoice.payment_failed':
         customer = stripe.Customer.retrieve(event.data.object.customer)
         email = customer.email
-        app.logger.info("Invoice payment failed for customer: {}".format(customer))
+        app.logger.info("Invoice payment failed for customer: {}".format(customer.id))
         tell_slack(":rotating_light: {email}'s automatic membership renewal failed. I'm emailing them to remind them about it.".format(email=email))
+
+        subject = "Your OpenStreetMap US Membership"
+        ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+        token = ts.dumps(customer.id, salt='email-confirm-key')
+        confirm_url = url_for('membership_update', token=token, _external=True)
+        html = render_template(
+            'email/subscription_renewal_failure.html',
+            customer=customer,
+            confirm_url=confirm_url
+        )
+        send_email(customer.email, subject, html)
+        app.logger.info('Sending renewal reminder to %s', customer.email)
 
     return "ok"
 

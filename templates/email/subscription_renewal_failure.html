@@ -1,0 +1,29 @@
+<html>
+<body>
+<p>
+{% if customer.metadata.first_name %}
+Hi {{ customer.metadata.first_name }},
+{% else %}
+Hi there,
+{% endif %}
+</p>
+
+<p>
+Your membership to OpenStreetMap US just expired. Normally we try to automatically renew, but for some reason we couldn't charge your credit card. To fix the problem, please click the link below and re-enter your credit card details:
+</p>
+
+<p>
+<a href="{{ confirm_url }}">Click this link to update your payment details and renew</a>.
+</p>
+
+<p>
+If you have any questions or concerns, please reply to this email and we'll be sure to help.
+</p>
+
+<p>
+Thanks!<br/>
+The OpenStreetMap US Board
+</p>
+
+</body>
+</html>
