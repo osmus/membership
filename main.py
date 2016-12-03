@@ -529,7 +529,7 @@ def stripe_webhook():
             confirm_url=confirm_url
         )
         send_email(customer.email, subject, html)
-        app.logger.info('Sending renewal reminder to %s', customer.email)
+        app.logger.info('Sending failed payment reminder to %s', customer.email)
 
     elif event.type == 'customer.subscription.created':
         customer = stripe.Customer.retrieve(event.data.object.customer)
@@ -568,7 +568,7 @@ def stripe_webhook():
             event=event,
         )
         send_email(customer.email, subject, html)
-        app.logger.info('Sending renewal reminder email to %s', customer.email)
+        app.logger.info('Sending upcoming charge email to %s', customer.email)
 
     return "ok"
 
