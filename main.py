@@ -2,6 +2,7 @@ from flask import Flask, Markup, abort, flash, request, session, redirect, url_f
 from flask import render_template_string, render_template
 from flask_github import GitHub, GitHubError
 from flask_wtf import FlaskForm
+from raven.contrib.flask import Sentry
 
 from wtforms import StringField, PasswordField, HiddenField, SelectField, validators
 from itsdangerous import URLSafeTimedSerializer
@@ -36,7 +37,9 @@ app.config.from_object(__name__)
 
 # setup github-flask
 github = GitHub(app)
-
+# setup sentry
+sentry = Sentry(app)
+# setup stripe
 stripe.api_key = app.config.get('STRIPE_SECRET_KEY')
 
 
