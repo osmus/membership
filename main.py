@@ -216,9 +216,6 @@ def membership_new():
 
         flash('Thanks for joining OpenStreetMap US!')
         app.logger.info("Successfully created user %s", customer.id)
-        tell_slack("New member signup from {}".format(
-            ' '.join([form.first_name.data, form.last_name.data]),
-        ))
         return redirect(url_for('membership_update', token=token))
 
     return render_template(
@@ -532,6 +529,26 @@ def stripe_webhook():
         )
         send_email(customer.email, subject, html)
         app.logger.info('Sending renewal reminder to %s', customer.email)
+
+    elif event.type == 'customer.subscription.created':
+        customer = stripe.Customer.retrieve(event.data.object.customer)
+        email = customer.email
+        app.logger.info("New subscription %s for customer %s", event.data.plan.id, customer.id)
+        tell_slack(":tada: {email} joined with a {plan_id} membership (${dollars}/{interval})".format(
+            email=email,
+            plan_id=event.data.plan.id,
+            dollars=_format_pennies_to_dollars(event.data.plan.amount),
+            interval=event.data.plan.interval,
+        ))
+
+        subject = "Your OpenStreetMap US Membership"
+        html = render_template(
+            'email/subscription_new.html',
+            customer=customer,
+            event=event,
+        )
+        send_email(customer.email, subject, html)
+        app.logger.info('Sending welcome email to %s', customer.email)
 
     return "ok"
 
