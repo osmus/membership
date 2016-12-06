@@ -536,12 +536,12 @@ def stripe_webhook():
 
     elif event.type == 'customer.subscription.created':
         customer = stripe.Customer.retrieve(event.data.object.customer)
-        app.logger.info("New subscription %s for customer %s", event.data.plan.id, customer.id)
+        app.logger.info("New subscription %s for customer %s", event.data.object.plan.id, customer.id)
         tell_slack(":tada: {email} joined with a {plan_id} membership (${dollars}/{interval})".format(
             email=customer.email,
-            plan_id=event.data.plan.id,
-            dollars=_format_pennies_to_dollars(event.data.plan.amount),
-            interval=event.data.plan.interval,
+            plan_id=event.data.object.plan.id,
+            dollars=_format_pennies_to_dollars(event.data.object.plan.amount),
+            interval=event.data.object.plan.interval,
         ))
 
         subject = "Your OpenStreetMap US Membership"
