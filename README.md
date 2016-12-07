@@ -17,7 +17,7 @@ heroku open
 You'll also need to sign up for GitHub, MailGun, Slack, Sentry, and Stripe. The various keys and URLs that these services give you will be passed to and used by the app via environment variables:
 
 | Environment Variable | Description |
-|:--------------------:|:-----------:|
+|:---------------------|:------------|
 | `DEBUG`              | Set to `false` to decrease the verbosity of logs and to prevent stack traces from showing up on the user's browser.
 | `SECRET_KEY`         | Set to a random string so that session tokens are generated securely.
 | `STRIPE_SECRET_KEY`  | Your Stripe secret key. While developing or testing, you should use Stripe's test mode key.
