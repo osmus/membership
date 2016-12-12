@@ -1,4 +1,14 @@
-from flask import Flask, Markup, abort, flash, request, session, redirect, url_for
+from flask import (
+    Flask,
+    Markup,
+    abort,
+    flash,
+    make_response,
+    request,
+    session,
+    redirect,
+    url_for,
+)
 from flask import render_template_string, render_template
 from flask_github import GitHub, GitHubError
 from flask_wtf import FlaskForm
@@ -8,7 +18,9 @@ from wtforms import StringField, PasswordField, HiddenField, SelectField, valida
 from itsdangerous import URLSafeTimedSerializer
 
 from datetime import datetime
+import StringIO
 import babel
+import unicodecsv
 import os
 import pprint
 import requests
@@ -417,6 +429,39 @@ def member_list():
     )
 
     return render_template('members.html', customers=customers)
+
+
+@app.route('/members/csv')
+def member_list_csv():
+    if session.get('github_access_token') is None:
+        return render_template('login.html')
+
+    active_only = bool(request.args.get('active'))
+
+    si = StringIO.StringIO()
+    cw = unicodecsv.writer(si)
+    cw.writerow(['firstname', 'lastname', 'email'])
+
+    customer_iter = stripe.Customer.auto_paging_iter(limit=50, expand=['data.subscriptions'])
+    for customer in customer_iter:
+        if active_only:
+            if customer.subscriptions.total_count > 0:
+                subscription = customer.subscriptions.data[0]
+                if subscription.status != 'active':
+                    continue
+            else:
+                continue
+
+        cw.writerow([
+            customer.metadata.get('first_name'),
+            customer.metadata.get('last_name'),
+            customer.email,
+        ])
+
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
 
 
 @app.route('/members/<string:customer_id>', methods=["GET", "POST"])

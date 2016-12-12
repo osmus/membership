@@ -7,7 +7,7 @@
     </p>
 
     <p>
-        {{ customers.total_count }} members found.
+        {{ customers.total_count }} members found. Download CSV of <a href="{{ url_for('member_list_csv', active='true') }}">active members</a> or <a href="{{ url_for('member_list_csv') }}">all members</a>.
     </p>
 
     <table class="pure-table">
