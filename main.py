@@ -559,11 +559,11 @@ def send_reminder_email(customer_id):
 def stripe_webhook():
     webhook_data = request.get_json()
     event = stripe.Event.retrieve(webhook_data['id'])
-    app.logger.info("Received Stripe webhook event: {}".format(event.id))
+    app.logger.info("Received Stripe webhook event %s: %s", event.type, event.id)
 
     if event.type == 'invoice.payment_failed':
         customer = stripe.Customer.retrieve(event.data.object.customer)
-        app.logger.info("Invoice payment failed for customer: {}".format(customer.id))
+        app.logger.info("Invoice payment failed for customer %s", customer.id)
         tell_slack(":rotating_light: {email}'s automatic membership renewal failed.".format(
             email=customer.email,
         ))
@@ -582,7 +582,7 @@ def stripe_webhook():
 
     elif event.type == 'invoice.payment_succeeded':
         customer = stripe.Customer.retrieve(event.data.object.customer)
-        app.logger.info("Invoice payment succeeded for customer: {}".format(customer.id))
+        app.logger.info("Invoice payment succeeded for customer %s", customer.id)
         tell_slack(":100: {email}'s automatic membership renewal was successful.".format(
             email=customer.email,
         ))
