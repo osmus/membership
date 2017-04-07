@@ -578,7 +578,14 @@ def stripe_webhook():
             confirm_url=confirm_url
         )
         send_email(customer.email, subject, html)
-        app.logger.info('Sending failed payment reminder to %s', customer.email)
+        app.logger.info('Sent failed payment reminder to %s', customer.email)
+
+    elif event.type == 'invoice.payment_succeeded':
+        customer = stripe.Customer.retrieve(event.data.object.customer)
+        app.logger.info("Invoice payment succeeded for customer: {}".format(customer.id))
+        tell_slack(":100: {email}'s automatic membership renewal was successful.".format(
+            email=customer.email,
+        ))
 
     elif event.type == 'customer.subscription.created':
         customer = stripe.Customer.retrieve(event.data.object.customer)
@@ -597,7 +604,7 @@ def stripe_webhook():
             event=event,
         )
         send_email(customer.email, subject, html)
-        app.logger.info('Sending welcome email to %s', customer.email)
+        app.logger.info('Sent welcome email to %s', customer.email)
 
     elif event.type == 'invoice.created' and not event.data.object.closed:
         # According to Stripe docs an automatic renewal invoice will be created
@@ -617,7 +624,7 @@ def stripe_webhook():
             event=event,
         )
         send_email(customer.email, subject, html)
-        app.logger.info('Sending upcoming charge email to %s', customer.email)
+        app.logger.info('Sent upcoming charge email to %s', customer.email)
 
     return "ok"
 
