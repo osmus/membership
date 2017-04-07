@@ -67,6 +67,7 @@ def send_email(recipient, subject, html):
     request_url = 'https://api.mailgun.net/v2/{0}/messages'.format(app.config['MAILGUN_SANDBOX'])
     response = requests.post(request_url, auth=('api', app.config['MAILGUN_API_KEY']), data={
         'from': 'OpenStreetMap US Membership <membership@openstreetmap.us>',
+        'cc': 'OpenStreetMap US Membership <membership@openstreetmap.us>',
         'to': recipient,
         'subject': subject,
         'html': html
