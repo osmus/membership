@@ -7,6 +7,8 @@
 <div class="pure-u-1">
     <h2>Join OpenStreetMap US</h2>
 
+    <p>Thanks for your interest in joining OpenStreetMap US! Please note that you <em>don't need to join OpenStreetMap US to map</em>. <strong><a href="https://openstreetmap.org">Contributing to OpenStreetMap is always free</a></strong> and becoming an OpenStreetMap US member is not required to map.</p>
+
     <form method="post" action="{{ url_for('membership_new') }}" class="pure-form pure-form-aligned">
         {{ form.csrf_token }}
         {{ render_field(form.first_name) }}
