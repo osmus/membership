@@ -84,12 +84,12 @@ class MemberUpdateForm(FlaskForm):
     last_name = StringField('Last Name', [validators.DataRequired()])
     osm_username = StringField('OSM Username', [validators.Length(min=3, max=255), validators.Optional()])
     email = StringField('Email Address', [validators.Email()])
-    address1 = StringField('Street Address')
+    address1 = StringField('Street Address', [validators.DataRequired()])
     address2 = StringField('Address Line 2')
-    city = StringField('City')
-    region = StringField('State / Region / Province')
-    postal_code = StringField('Postal / Zip Code')
-    country = StringField('Country')
+    city = StringField('City', [validators.DataRequired()])
+    region = StringField('State / Region / Province', [validators.DataRequired()])
+    postal_code = StringField('Postal / Zip Code', [validators.DataRequired()])
+    country = StringField('Country', [validators.DataRequired()])
     phone = StringField('Phone Number')
 
 
