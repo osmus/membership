@@ -129,9 +129,12 @@ def find_customer_by_email(email):
     if not cached:
         customer_iter = stripe.Customer.auto_paging_iter(limit=50)
         for customer in customer_iter:
+            if not customer.email:
+                continue
+
             val = cache_customer(customer)
 
-            if customer.email and customer.email.lower() == email.lower():
+            if customer.email.lower() == email.lower():
                 cached = val
 
     return cached
