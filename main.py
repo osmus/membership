@@ -9,12 +9,13 @@ from flask import (
     redirect,
     url_for,
 )
-from flask import render_template_string, render_template
+from flask import render_template
 from flask_github import GitHub, GitHubError
+from flask_redis import FlaskRedis
 from flask_wtf import FlaskForm
 from raven.contrib.flask import Sentry
 
-from wtforms import StringField, PasswordField, HiddenField, SelectField, validators
+from wtforms import StringField, SelectField, validators
 from itsdangerous import URLSafeTimedSerializer
 
 from datetime import datetime
@@ -22,11 +23,9 @@ import StringIO
 import babel
 import unicodecsv
 import os
-import pprint
 import requests
 import stripe
 import logging
-import time
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'development key')
 DEBUG = os.environ.get('DEBUG', 'true').lower() == 'true'
@@ -47,6 +46,7 @@ TEAM_ID = os.environ.get('GITHUB_TEAM_ID')
 app = Flask(__name__)
 app.config.from_object(__name__)
 
+redis_store = FlaskRedis(app)
 # setup github-flask
 github = GitHub(app)
 # setup sentry
@@ -105,12 +105,35 @@ def build_plan_name(plan):
     )
 
 
+def redis_key(email):
+    return 'email.{}'.format(hash(email.lower()))
+
+
+def cache_customer(customer):
+    """ Stores the bits of a Stripe customer that we care about into Redis. """
+    key = redis_key(customer.email)
+    val = {
+        'email': customer.email,
+        'id': customer.id,
+    }
+    redis_store.put(key, val)
+    return val
+
+
 def find_customer_by_email(email):
-    customer_iter = stripe.Customer.auto_paging_iter(limit=50)
-    for customer in customer_iter:
-        if customer.email and customer.email.lower() == email.lower():
-            return customer
-    return None
+    """ Check Redis for the given email and return the useful stuff if the
+    customer is there, otherwise return None. """
+    cached = redis_store.get(redis_key(email))
+
+    if not cached:
+        customer_iter = stripe.Customer.auto_paging_iter(limit=50)
+        for customer in customer_iter:
+            val = cache_customer(customer)
+
+            if customer.email and customer.email.lower() == email.lower():
+                cached = val
+
+    return cached
 
 
 @app.before_first_request
@@ -139,7 +162,7 @@ def authorized(access_token):
     user = github.get('user')
     user_login = user.get('login')
     try:
-        membership = github.get('teams/{}/members/{}'.format(TEAM_ID, user_login))
+        github.get('teams/{}/members/{}'.format(TEAM_ID, user_login))
         session['github_login'] = user_login
         app.logger.info('GitHub logged in user %s', user_login)
         return redirect(next_url)
@@ -190,7 +213,8 @@ def membership_new():
         app.logger.info("Checking for existing customer with email %s", form.email.data)
         customer = find_customer_by_email(form.email.data)
         if customer:
-            flash(Markup('We already have a record of this email address. '
+            flash(Markup(
+                'We already have a record of this email address. '
                 'Please visit <a href="{}">the renewal page</a> to renew.'.format(
                     url_for('request_membership_update')
                 ))
@@ -227,6 +251,8 @@ def membership_new():
             source=request.form['stripeToken'],
         )
 
+        cache_customer(customer)
+
         ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
         token = ts.dumps(customer.id, salt='email-confirm-key')
 
@@ -254,14 +280,14 @@ def request_membership_update():
         if customer:
             app.logger.info("Found email %s", email)
             subject = "Update Your OpenStreetMap US Payment Details"
-            token = ts.dumps(customer.id, salt='email-confirm-key')
+            token = ts.dumps(customer['id'], salt='email-confirm-key')
             confirm_url = url_for('membership_update', token=token, _external=True)
             html = render_template(
                 'email/activate.html',
                 confirm_url=confirm_url
             )
-            send_email(customer.email, subject, html)
-            app.logger.info('Email address %s requested customer details', customer.email)
+            send_email(customer['email'], subject, html)
+            app.logger.info('Email address %s requested customer details', customer['email'])
 
         flash('Check your email for a link to update your membership details')
         return redirect(url_for('request_membership_update'))
