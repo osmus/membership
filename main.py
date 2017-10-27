@@ -38,6 +38,7 @@ STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
 MAILGUN_SANDBOX = os.environ.get('MAILGUN_SANDBOX')
 MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
 SLACK_URL = os.environ.get('SLACK_URL')
+REDIS_URL = os.environ.get('REDIS_URL')
 
 # "osmus" Organization, "Board" Team
 TEAM_ID = os.environ.get('GITHUB_TEAM_ID')
@@ -197,6 +198,14 @@ def _format_pennies_to_dollars(pennies):
     pennies = int(pennies)
     dollars = pennies / 100
     return '{:0.2f}'.format(dollars)
+
+
+@app.route('/healthcheck')
+def healthcheck():
+    resp = redis_store.get('foo')
+    assert resp is None
+
+    return 'OK'
 
 
 @app.route('/membership/join', methods=['GET', 'POST'])
