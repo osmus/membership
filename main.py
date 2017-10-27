@@ -127,7 +127,7 @@ def find_customer_by_email(email):
     cached = redis_store.get(redis_key(email))
 
     if not cached:
-        customer_iter = stripe.Customer.auto_paging_iter(limit=50)
+        customer_iter = stripe.Customer.auto_paging_iter(limit=100)
         for customer in customer_iter:
             if not customer.email:
                 continue
