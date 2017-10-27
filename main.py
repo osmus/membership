@@ -117,7 +117,7 @@ def cache_customer(customer):
         'email': customer.email,
         'id': customer.id,
     }
-    redis_store.put(key, val)
+    redis_store.set(key, val)
     return val
 
 
