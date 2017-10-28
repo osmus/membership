@@ -39,6 +39,20 @@
     {% elif subscription.status == 'active' %}
         Your membership is <strong>active</strong>.
         We'll bill you again in <strong>{{ subscription.current_period_end|from_timestamp|as_delta }}</strong> on {{ subscription.current_period_end|from_timestamp|as_date}} using your <strong>{{ customer.default_source.brand }}</strong> ending in <strong>{{ customer.default_source.last4 }}</strong>. <a href="{{ url_for('membership_cancel', token=token, subscription_id=subscription.id) }}">Cancel your membership</a> to prevent future charges.
+
+        <form method="post" action="{{ url_for('membership_payment_update', token=token) }}" class="pure-form">
+            <script
+                src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                data-key="{{ stripe_key }}"
+                data-name="OpenStreetMap US"
+                data-panel-label="Update Your Card"
+                data-label="Update Your Payment Details"
+                data-email="{{ customer.email }}"
+                data-allow-remember-me="false"
+                data-zip-code="true"
+                data-locale="auto">
+            </script>
+        </form>
     {% endif %}
     </p>
 

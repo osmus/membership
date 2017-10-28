@@ -9,7 +9,7 @@ from flask import (
     redirect,
     url_for,
 )
-from flask import render_template
+from flask import json, render_template
 from flask_github import GitHub, GitHubError
 from flask_redis import FlaskRedis
 from flask_wtf import FlaskForm
@@ -113,10 +113,10 @@ def redis_key(email):
 def cache_customer(customer):
     """ Stores the bits of a Stripe customer that we care about into Redis. """
     key = redis_key(customer.email)
-    val = {
+    val = json.dumps({
         'email': customer.email,
         'id': customer.id,
-    }
+    })
     redis_store.set(key, val)
     return val
 
@@ -137,7 +137,7 @@ def find_customer_by_email(email):
             if customer.email.lower() == email.lower():
                 cached = val
 
-    return cached
+    return json.loads(cached)
 
 
 @app.before_first_request
@@ -290,7 +290,7 @@ def request_membership_update():
 
         customer = find_customer_by_email(email)
         if customer:
-            app.logger.info("Found email %s", email)
+            app.logger.info("Found email %s", customer['email'])
             subject = "Update Your OpenStreetMap US Payment Details"
             token = ts.dumps(customer['id'], salt='email-confirm-key')
             confirm_url = url_for('membership_update', token=token, _external=True)
