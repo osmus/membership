@@ -137,6 +137,10 @@ def find_customer_by_email(email):
             if customer.email.lower() == email.lower():
                 cached = val
 
+    if not cached:
+        # No result found in memcache or on Stripe
+        return None
+
     return json.loads(cached)
 
 
