@@ -3,7 +3,7 @@
     <label for="{{ field.id }}">{{ field.label }}</label>
     {{ field(**kwargs)|safe }}
     {% if field.errors %}
-      <ul class=errors>
+      <ul class="errors">
       {% for error in field.errors %}
         <li>{{ error }}</li>
       {% endfor %}
