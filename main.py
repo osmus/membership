@@ -463,7 +463,7 @@ def membership_cancel(token):
 @app.route('/members')
 def member_list():
     if session.get('github_access_token') is None:
-        return render_template('login.html')
+        return redirect(url_for('github_login'))
 
     after = request.args.get('after')
     before = request.args.get('before')
@@ -480,7 +480,7 @@ def member_list():
 @app.route('/members/csv')
 def member_list_csv():
     if session.get('github_access_token') is None:
-        return render_template('login.html')
+        return redirect(url_for('github_login'))
 
     active_only = bool(request.args.get('active'))
 
