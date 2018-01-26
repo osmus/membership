@@ -275,7 +275,8 @@ def membership_new():
         flash('Thanks for joining OpenStreetMap US!')
         app.logger.info("Successfully created user %s", customer.id)
         return redirect(url_for('membership_update', token=token))
-    else:
+
+    if form.errors:
         flash("There is something wrong with the form. Please look below and update the fields.")
 
     return render_template(
