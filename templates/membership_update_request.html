@@ -8,6 +8,17 @@
     <p>
         Enter your email address here and we'll send you a link where you can view your membership details and renew if you'd like.
     </p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="errors">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
     <form method="post" action="{{ url_for('request_membership_update') }}">
         <dl>
             {{ form.csrf_token }}
