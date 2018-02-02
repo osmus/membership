@@ -19,13 +19,15 @@ from wtforms import StringField, SelectField, validators
 from itsdangerous import URLSafeTimedSerializer
 
 from datetime import datetime
-import StringIO
 import babel
-import unicodecsv
+import base64
+import hashlib
 import os
-import requests
-import stripe
 import logging
+import requests
+import StringIO
+import stripe
+import unicodecsv
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'development key')
 DEBUG = os.environ.get('DEBUG', 'true').lower() == 'true'
@@ -107,7 +109,9 @@ def build_plan_name(plan):
 
 
 def redis_key(email):
-    return 'email.{}'.format(hash(email.lower()))
+    h = hashlib.sha1(email.strip().lower().encode('utf8')).digest()
+    h = base64.urlsafe_b64encode(h)
+    return 'email.{}'.format(h)
 
 
 def cache_customer(customer):
@@ -455,6 +459,23 @@ def membership_cancel(token):
         ))
 
     return redirect(url_for('membership_update', token=token))
+
+
+@app.route('/members/refreshcache')
+def member_cache_refresh():
+    if session.get('github_access_token') is None:
+        return redirect(url_for('github_login'))
+
+    count = 0
+    customer_iter = stripe.Customer.auto_paging_iter(limit=100)
+    for customer in customer_iter:
+        if not customer.email:
+            continue
+
+        cache_customer(customer)
+        count += 1
+
+    return "Refreshed %s customers" % count
 
 
 @app.route('/members')
