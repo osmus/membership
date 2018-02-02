@@ -124,7 +124,12 @@ def cache_customer(customer):
 def find_customer_by_email(email):
     """ Check Redis for the given email and return the useful stuff if the
     customer is there, otherwise return None. """
-    cached = redis_store.get(redis_key(email))
+    if not email:
+        return None
+
+    r_key = redis_key(email)
+    cached = redis_store.get(r_key)
+    app.logger.info("Checking cache for email %s at key %s: %s", email, r_key, cached)
 
     if not cached:
         # No result found in memcache
