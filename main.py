@@ -284,9 +284,10 @@ def request_membership_update():
 
         ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
+        app.logger.info("Looking for email %s", email)
         customer = find_customer_by_email(email)
         if customer:
-            app.logger.info("Found email %s", customer['email'])
+            app.logger.info("Found customer %s", customer)
             subject = "Update Your OpenStreetMap US Payment Details"
             token = ts.dumps(customer['id'], salt='email-confirm-key')
             confirm_url = url_for('membership_update', token=token, _external=True)
@@ -296,6 +297,8 @@ def request_membership_update():
             )
             send_email(customer['email'], subject, html)
             app.logger.info('Email address %s requested customer details', customer['email'])
+        else:
+            app.logger.info("Found no customer for email %s", email)
 
         flash('Check your email for a link to update your membership details')
         return redirect(url_for('request_membership_update'))
