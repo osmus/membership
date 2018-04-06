@@ -1,0 +1,29 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+babel = "*"
+flask = "*"
+flask-redis = "*"
+flask-wtf = "*"
+github-flask = "*"
+gunicorn = "*"
+pytz = "*"
+raven = {extras = ["flask"]}
+redis = "*"
+requests = "*"
+stripe = "*"
+
+
+[dev-packages]
+
+
+
+[requires]
+
+python_version = "3.6"
