@@ -109,7 +109,7 @@ def build_plan_name(plan):
 
 def redis_key(email):
     h = hashlib.sha1(email.strip().lower().encode('utf8')).digest()
-    h = base64.urlsafe_b64encode(h)
+    h = base64.urlsafe_b64encode(h).decode('utf8')
     return 'email.{}'.format(h)
 
 
