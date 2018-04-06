@@ -101,7 +101,7 @@ class NewMemberForm(MemberUpdateForm):
 
 def build_plan_name(plan):
     return '{name} (${amount:0.2f}/{interval})'.format(
-        name=plan.name,
+        name=plan.product.name,
         amount=plan.amount / 100.0,
         interval=plan.interval,
     )
@@ -216,7 +216,7 @@ def healthcheck():
 def membership_new():
     form = NewMemberForm()
 
-    plans = stripe.Plan.list()
+    plans = stripe.Plan.list(expand=['data.product'])
     form.plan.choices = [
         (p.id, build_plan_name(p)) for p in plans
     ]
