@@ -19,15 +19,14 @@ from wtforms import StringField, SelectField, validators
 from itsdangerous import URLSafeTimedSerializer
 
 from datetime import datetime
+from io import StringIO
 import babel
 import base64
 import hashlib
 import os
 import logging
 import requests
-import StringIO
 import stripe
-import unicodecsv
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'development key')
 DEBUG = os.environ.get('DEBUG', 'true').lower() == 'true'
@@ -502,8 +501,8 @@ def member_list_csv():
 
     active_only = bool(request.args.get('active'))
 
-    si = StringIO.StringIO()
-    cw = unicodecsv.writer(si)
+    si = StringIO()
+    cw = csv.writer(si)
     cw.writerow(['firstname', 'lastname', 'email'])
 
     customer_iter = stripe.Customer.auto_paging_iter(limit=50, expand=['data.subscriptions'])
