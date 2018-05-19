@@ -13,7 +13,25 @@
   <meta name="twitter:title" content="Join Us">
   <meta name="twitter:description" content="By joining OpenStreetMap US you help grow OpenStreetMap in the United States and beyond through conferences, community events, and advocacy. OpenStreetMap gives ordinary citizens the power and the tools to...">
 
-  <link rel='shortcut icon' href='/img/favicon.ico' type='image/x-icon' />
+  <link rel="apple-touch-icon" sizes="57x57" href="https://openstreetmap.us/img/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="https://openstreetmap.us/img/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="https://openstreetmap.us/img/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="https://openstreetmap.us/img/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="https://openstreetmap.us/img/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="https://openstreetmap.us/img/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="https://openstreetmap.us/img/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="https://openstreetmap.us/img/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://openstreetmap.us/img/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="https://openstreetmap.us/img/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://openstreetmap.us/img/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="https://openstreetmap.us/img/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://openstreetmap.us/img/favicon/favicon-16x16.png">
+  <link rel="manifest" href="https://openstreetmap.us/img/favicon/manifest.json">
+  <link rel='shortcut icon' href='https://openstreetmap.us/img/favicon/favicon.ico' type='image/x-icon' />
+  <meta name="msapplication-TileColor" content="#000">
+  <meta name="msapplication-TileImage" content="https://openstreetmap.us/img/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#000">
+
   <link href='https://openstreetmap.us/site.css' rel='stylesheet' />
   <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link href='https://fonts.googleapis.com/css?family=Merriweather:700' rel='stylesheet' type='text/css'>
@@ -41,8 +59,8 @@
 
         <li class='col3 openstreetmap-us'>
             <a href='/' class="button active">
-                <span class='icon pre-text openstreetmap-us'></span>
-                <span class='navbar-titles'>OpenStreetMap US</span>
+              <svg class="iconsvg pre-text"><use xlink:href="#osm-logo"></use></svg>
+              <span class='navbar-titles'>OpenStreetMap US</span>
             </a>
         </li>
 
@@ -62,5 +80,14 @@
     <div class='smallprint center pad1 col12 clearfix'>
         <small>© OpenStreetMap US | <a href="mailto:membership@openstreetmap.us">membership@openstreetmap.us</a></small>
     </div>
+
+  <script type="text/javascript">
+    $.get('https://openstreetmap.us/img/icons/osm.svg', function(data) {
+      var div = document.createElement('div');
+      div.innerHTML = new XMLSerializer().serializeToString(data.documentElement);
+      document.body.insertBefore(div, document.body.childNodes[0]);
+    });
+  </script>
+
 </body>
 </html>
