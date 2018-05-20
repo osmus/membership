@@ -1,3 +1,5 @@
+{% from "_logo.html" import logo_def %}
+
 <!DOCTYPE html>
 <!--[if IE 8]>     <html class="ie8"> <![endif]-->
 <!--[if IE 9]>     <html class="ie9"> <![endif]-->
@@ -55,8 +57,8 @@
 </head>
 
 <body>
+    {{ logo_def() }}
     <ul class='navbar center'>
-
         <li class='col3 openstreetmap-us'>
             <a href='/' class="button active">
               <svg class="iconsvg pre-text"><use xlink:href="#osm-logo"></use></svg>
@@ -80,14 +82,6 @@
     <div class='smallprint center pad1 col12 clearfix'>
         <small>© OpenStreetMap US | <a href="mailto:membership@openstreetmap.us">membership@openstreetmap.us</a></small>
     </div>
-
-  <script type="text/javascript">
-    $.get('https://openstreetmap.us/img/icons/osm.svg', function(data) {
-      var div = document.createElement('div');
-      div.innerHTML = new XMLSerializer().serializeToString(data.documentElement);
-      document.body.insertBefore(div, document.body.childNodes[0]);
-    });
-  </script>
 
 </body>
 </html>
