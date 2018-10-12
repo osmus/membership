@@ -364,7 +364,6 @@ def membership_update(token):
 
     subscription = None
     if customer.subscriptions.data:
-        # I'm going to assume a single subscription for now, which might be a wrong assumption
         subscription = customer.subscriptions.data[0]
 
     plans = stripe.Plan.list()
@@ -401,34 +400,6 @@ def membership_payment_update(token):
     return redirect(url_for('membership_update', token=token))
 
 
-@app.route('/membership/<string:token>/renew', methods=['POST'])
-def membership_renew(token):
-    try:
-        ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
-        customer_id = ts.loads(token, salt="email-confirm-key", max_age=86400)
-    except:
-        abort(404)
-
-    if not request.form.get('plan_id'):
-        flash("Please select a plan to renew with")
-        return redirect(url_for('membership_update', token=token))
-
-    sub = stripe.Subscription.create(
-        customer=customer_id,
-        plan=request.form['plan_id'],
-        source=request.form['stripeToken'],
-        expand=['customer'],
-    )
-
-    app.logger.info("Successfully renewed %s membership for %s", request.form['plan_id'], customer_id)
-    flash('Your membership is renewed!')
-    tell_slack("{} renewed their membership".format(
-        sub.customer.email,
-    ))
-
-    return redirect(url_for('membership_update', token=token))
-
-
 @app.route('/membership/<string:token>/cancel')
 def membership_cancel(token):
     try:
@@ -441,14 +412,14 @@ def membership_cancel(token):
 
     if not sub:
         app.logger.error("Subscription not found for id %s", request.args['subscription_id'])
-        flash('There was a problem cancelling your membership. Please contact board@openstreetmap.us.')
+        flash('There was a problem cancelling your membership. Please contact membership@openstreetmap.us.')
     elif sub.customer.id != customer_id:
         app.logger.error("Subscription %s found, but user %s didn't match expected %s",
             request.args['subscription_id'],
             sub.customer.id,
             customer_id
         )
-        flash('There was a problem cancelling your membership. Please contact board@openstreetmap.us.')
+        flash('There was a problem cancelling your membership. Please contact membership@openstreetmap.us.')
     else:
         sub.delete(at_period_end=True)
         app.logger.info("Successfully cancelled membership %s for %s", sub.id, customer_id)
