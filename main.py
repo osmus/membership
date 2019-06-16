@@ -641,7 +641,7 @@ def stripe_webhook():
 
     elif event.type == 'invoice.upcoming':
         customer = stripe.Customer.retrieve(event.data.object.customer)
-        app.logger.info("New upcoming invoice %s for customer %s", event.data.object.id, customer.id)
+        app.logger.info("New upcoming invoice for customer %s", customer.id)
         tell_slack(":timer_clock: {email}'s subscription renewal is coming up in ~7 days. Stripe sent them a reminder.".format(
             email=customer.email,
         ))
