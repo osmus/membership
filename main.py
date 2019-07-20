@@ -421,7 +421,7 @@ def membership_cancel(token):
         )
         flash('There was a problem cancelling your membership. Please contact membership@openstreetmap.us.')
     else:
-        sub.delete(at_period_end=True)
+        sub.delete()
         app.logger.info("Successfully cancelled membership %s for %s", sub.id, customer_id)
         flash('Your membership has been cancelled and will no longer automatically renew.')
         tell_slack("{} cancelled their membership".format(
